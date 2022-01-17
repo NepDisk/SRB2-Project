@@ -2782,8 +2782,17 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 			break;
 
 		case 423: // Change Sky
+			char skynum_compat[8];
 			if ((mo && mo->player && P_IsLocalPlayer(mo->player)) || (line->flags & ML_NOCLIMB))
-				P_SetupLevelSky(sides[line->sidenum[0]].textureoffset>>FRACBITS, (line->flags & ML_NOCLIMB));
+			{
+				if (sides[line->sidenum[0]].textureoffset>>FRACBITS == 0)
+					P_SetupLevelSky(sides[line->sidenum[0]].text, (line->flags & ML_NOCLIMB));
+				else
+				{
+					snprintf(skynum_compat, 9, "SKY%d", sides[line->sidenum[0]].textureoffset>>FRACBITS);
+					P_SetupLevelSky(skynum_compat, (line->flags & ML_NOCLIMB));
+				}
+			}
 			break;
 
 		case 424: // Change Weather

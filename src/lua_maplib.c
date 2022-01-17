@@ -2157,6 +2157,12 @@ static int mapheaderinfo_get(lua_State *L)
 		lua_pushinteger(L, header->weather);
 	else if (fastcmp(field,"skynum"))
 		lua_pushinteger(L, header->skynum);
+	else if (fastcmp(field,"sky")) {
+		for (i = 0; i < 8; i++)
+			if (!header->sky[i])
+				break;
+		lua_pushlstring(L, header->sky, i);
+	}
 	else if (fastcmp(field,"skybox_scalex"))
 		lua_pushinteger(L, header->skybox_scalex);
 	else if (fastcmp(field,"skybox_scaley"))

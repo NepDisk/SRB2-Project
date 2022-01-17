@@ -4026,7 +4026,7 @@ static inline void P_NetArchiveSpecials(void)
 	WRITEUINT32(save_p, 0xffffffff);
 
 	// Sky number
-	WRITEINT32(save_p, globallevelskynum);
+	//WRITEINT32(save_p, globallevelskynum);
 
 	// Current global weather type
 	WRITEUINT8(save_p, globalweather);
@@ -4043,7 +4043,7 @@ static inline void P_NetArchiveSpecials(void)
 static void P_NetUnArchiveSpecials(void)
 {
 	size_t i;
-	INT32 j;
+	//INT32 j;
 
 	if (READUINT32(save_p) != ARCHIVEBLOCK_SPECIALS)
 		I_Error("Bad $$$.sav at archive block Specials");
@@ -4056,9 +4056,9 @@ static void P_NetUnArchiveSpecials(void)
 		itemrespawntime[iquehead++] = READINT32(save_p);
 	}
 
-	j = READINT32(save_p);
-	if (j != globallevelskynum)
-		P_SetupLevelSky(j, true);
+	//j = READINT32(save_p);
+	//if (j != globallevelskynum)
+		//P_SetupLevelSky(j, true);
 
 	globalweather = READUINT8(save_p);
 

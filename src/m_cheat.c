@@ -709,7 +709,7 @@ void Command_Skynum_f(void)
 	REQUIRE_INLEVEL;
 	REQUIRE_SINGLEPLAYER;
 
-	if (COM_Argc() != 2)
+	/*if (COM_Argc() != 2)
 	{
 		CONS_Printf(M_GetText("skynum <sky#>: change the sky\n"));
 		CONS_Printf(M_GetText("Current sky is %d\n"), levelskynum);
@@ -718,7 +718,7 @@ void Command_Skynum_f(void)
 
 	CONS_Printf(M_GetText("Previewing sky %s...\n"), COM_Argv(1));
 
-	P_SetupLevelSky(atoi(COM_Argv(1)), false);
+	P_SetupLevelSky(atoi(COM_Argv(1)), false);*/
 }
 
 void Command_Weather_f(void)
