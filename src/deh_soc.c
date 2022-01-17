@@ -1655,8 +1655,6 @@ void readlevelheader(MYFILE *f, INT32 num)
 				strncpy(mapheaderinfo[num-1]->sky, word2, 8);
 			else if (fastcmp(word, "INTERSCREEN"))
 				strncpy(mapheaderinfo[num-1]->interscreen, word2, 8);
-			else if (fastcmp(word, "INTERSCREEN"))
-				strncpy(mapheaderinfo[num-1]->interscreen, word2, 8);
 			else if (fastcmp(word, "PRECUTSCENENUM"))
 				mapheaderinfo[num-1]->precutscenenum = (UINT8)i;
 			else if (fastcmp(word, "CUTSCENENUM"))
