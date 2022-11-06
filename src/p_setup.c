@@ -7644,7 +7644,7 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	// Sky will attempt to load first, and if that fails, SkyNum will be attempted instead.
 	if (mapheaderinfo[gamemap-1]->sky[0] == (INT32)('-'))
 	{
-		snprintf(skynum_compat, 9, "SKY%d", mapheaderinfo[gamemap-1]->skynum);
+		snprintf(skynum_compat, 8, "SKY%d", mapheaderinfo[gamemap-1]->skynum);
 		P_SetupLevelSky(skynum_compat, true);
 	}
 	else
