@@ -6789,10 +6789,13 @@ static boolean P_LoadMapFromFile(void)
 /** Sets up a sky texture to use for the level.
   * The sky texture is used instead of F_SKY1.
   */
-void P_SetupLevelSky(char *sky, boolean global)
+void P_SetupLevelSky(char sky[8], boolean global)
 {
 	skytexture = R_TextureNumForName(sky);
-	levelsky = *sky;
+	if (levelsky != NULL)
+		free(levelsky);
+	levelsky = malloc(9);
+	strcpy(levelsky, sky);
 
 	// Global change
 	if (global)
