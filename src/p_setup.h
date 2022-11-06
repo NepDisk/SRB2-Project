@@ -93,7 +93,7 @@ INT32 P_CheckLevelFlat(const char *flatname);
 extern size_t nummapthings;
 extern mapthing_t *mapthings;
 
-void P_SetupLevelSky(char *sky, boolean global);
+void P_SetupLevelSky(char sky[8], boolean global);
 #ifdef SCANTHINGS
 void P_ScanThings(INT16 mapnum, INT16 wadnum, INT16 lumpnum);
 #endif
