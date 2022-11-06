@@ -1,7 +1,7 @@
 // SONIC ROBO BLAST 2
 //-----------------------------------------------------------------------------
 // Copyright (C) 2012-2016 by John "JTE" Muniz.
-// Copyright (C) 2012-2021 by Sonic Team Junior.
+// Copyright (C) 2012-2022 by Sonic Team Junior.
 //
 // This program is free software distributed under the
 // terms of the GNU General Public License, version 2.
@@ -2202,6 +2202,31 @@ static int lib_pExplodeMissile(lua_State *L)
 	return 0;
 }
 
+static int lib_pMobjTouchingSectorSpecial(lua_State *L)
+{
+	mobj_t *mo = *((mobj_t**)luaL_checkudata(L, 1, META_MOBJ));
+	INT32 section = (INT32)luaL_checkinteger(L, 2);
+	INT32 number = (INT32)luaL_checkinteger(L, 3);
+	//HUDSAFE
+	INLEVEL
+	if (!mo)
+		return LUA_ErrInvalid(L, "mobj_t");
+	LUA_PushUserdata(L, P_MobjTouchingSectorSpecial(mo, section, number), META_SECTOR);
+	return 1;
+}
+
+static int lib_pMobjTouchingSectorSpecialFlag(lua_State *L)
+{
+	mobj_t *mo = *((mobj_t**)luaL_checkudata(L, 1, META_MOBJ));
+	sectorspecialflags_t flag = (INT32)luaL_checkinteger(L, 2);
+	//HUDSAFE
+	INLEVEL
+	if (!mo)
+		return LUA_ErrInvalid(L, "mobj_t");
+	LUA_PushUserdata(L, P_MobjTouchingSectorSpecialFlag(mo, flag), META_SECTOR);
+	return 1;
+}
+
 static int lib_pPlayerTouchingSectorSpecial(lua_State *L)
 {
 	player_t *player = *((player_t **)luaL_checkudata(L, 1, META_PLAYER));
@@ -2212,6 +2237,18 @@ static int lib_pPlayerTouchingSectorSpecial(lua_State *L)
 	if (!player)
 		return LUA_ErrInvalid(L, "player_t");
 	LUA_PushUserdata(L, P_PlayerTouchingSectorSpecial(player, section, number), META_SECTOR);
+	return 1;
+}
+
+static int lib_pPlayerTouchingSectorSpecialFlag(lua_State *L)
+{
+	player_t *player = *((player_t **)luaL_checkudata(L, 1, META_PLAYER));
+	sectorspecialflags_t flag = (INT32)luaL_checkinteger(L, 2);
+	//HUDSAFE
+	INLEVEL
+	if (!player)
+		return LUA_ErrInvalid(L, "player_t");
+	LUA_PushUserdata(L, P_PlayerTouchingSectorSpecialFlag(player, flag), META_SECTOR);
 	return 1;
 }
 
@@ -2346,21 +2383,11 @@ static int lib_pFadeLight(lua_State *L)
 	INT32 speed = (INT32)luaL_checkinteger(L, 3);
 	boolean ticbased = lua_optboolean(L, 4);
 	boolean force = lua_optboolean(L, 5);
+	boolean relative = lua_optboolean(L, 6);
 	NOHUD
 	INLEVEL
-	P_FadeLight(tag, destvalue, speed, ticbased, force);
+	P_FadeLight(tag, destvalue, speed, ticbased, force, relative);
 	return 0;
-}
-
-static int lib_pThingOnSpecial3DFloor(lua_State *L)
-{
-	mobj_t *mo = *((mobj_t **)luaL_checkudata(L, 1, META_MOBJ));
-	NOHUD
-	INLEVEL
-	if (!mo)
-		return LUA_ErrInvalid(L, "mobj_t");
-	LUA_PushUserdata(L, P_ThingOnSpecial3DFloor(mo), META_SECTOR);
-	return 1;
 }
 
 static int lib_pIsFlagAtBase(lua_State *L)
@@ -3463,7 +3490,7 @@ static int lib_gAddPlayer(lua_State *L)
 		lua_pushnil(L);
 		return 1;
 	}
-	
+
 
 	newplayernum = i;
 
@@ -3494,15 +3521,15 @@ static int lib_gAddPlayer(lua_State *L)
 
 	// Read the bot name, if given
 	if (!lua_isnoneornil(L, 3))
-		strcpy(player_names[newplayernum], luaL_checkstring(L, 3));
-	
+		strlcpy(player_names[newplayernum], luaL_checkstring(L, 3), sizeof(*player_names));
+
 	bot = luaL_optinteger(L, 4, 3);
 	newplayer->bot = (bot >= BOT_NONE && bot <= BOT_MPAI) ? bot : BOT_MPAI;
-	
+
 	// If our bot is a 2P type, we'll need to set its leader so it can spawn
 	if (newplayer->bot == BOT_2PAI || newplayer->bot == BOT_2PHUMAN)
 		B_UpdateBotleader(newplayer);
-	
+
 	// Set the skin (can't do this until AFTER bot type is set!)
 	SetPlayerSkinByNum(newplayernum, skinnum);
 
@@ -3515,7 +3542,7 @@ static int lib_gAddPlayer(lua_State *L)
 		strcpy(joinmsg, va(joinmsg, player_names[newplayernum], newplayernum));
 		HU_AddChatText(joinmsg, false);
 	}
-	
+
 	LUA_PushUserdata(L, newplayer, META_PLAYER);
 	return 1;
 }
@@ -4063,7 +4090,10 @@ static luaL_Reg lib[] = {
 	{"P_SetMobjStateNF",lib_pSetMobjStateNF},
 	{"P_DoSuperTransformation",lib_pDoSuperTransformation},
 	{"P_ExplodeMissile",lib_pExplodeMissile},
+	{"P_MobjTouchingSectorSpecial",lib_pMobjTouchingSectorSpecial},
+	{"P_MobjTouchingSectorSpecialFlag",lib_pMobjTouchingSectorSpecialFlag},
 	{"P_PlayerTouchingSectorSpecial",lib_pPlayerTouchingSectorSpecial},
+	{"P_PlayerTouchingSectorSpecialFlag",lib_pPlayerTouchingSectorSpecialFlag},
 	{"P_FindLowestFloorSurrounding",lib_pFindLowestFloorSurrounding},
 	{"P_FindHighestFloorSurrounding",lib_pFindHighestFloorSurrounding},
 	{"P_FindNextHighestFloor",lib_pFindNextHighestFloor},
@@ -4075,7 +4105,6 @@ static luaL_Reg lib[] = {
 	{"P_LinedefExecute",lib_pLinedefExecute},
 	{"P_SpawnLightningFlash",lib_pSpawnLightningFlash},
 	{"P_FadeLight",lib_pFadeLight},
-	{"P_ThingOnSpecial3DFloor",lib_pThingOnSpecial3DFloor},
 	{"P_IsFlagAtBase",lib_pIsFlagAtBase},
 	{"P_SetupLevelSky",lib_pSetupLevelSky},
 	{"P_SetSkyboxMobj",lib_pSetSkyboxMobj},
