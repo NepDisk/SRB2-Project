@@ -2680,7 +2680,7 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 			char skynum_compat[8];
 			if ((mo && mo->player && P_IsLocalPlayer(mo->player)) || (line->args[1]))
 			{
-					snprintf(skynum_compat, 9, "SKY%d", line->args[0]);
+					snprintf(skynum_compat, 8, "SKY%d", line->args[0]);
 					P_SetupLevelSky(skynum_compat, (line->flags & ML_NOCLIMB));
 			}
 			break;
