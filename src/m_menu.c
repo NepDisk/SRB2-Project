@@ -12057,6 +12057,7 @@ static boolean      colorgrid;
 static void M_DrawSetupMultiPlayerMenu(void)
 {
 	INT32 x, y, cursory = 0, flags = 0;
+	INT32 scale = FRACUNIT;
 	spritedef_t *sprdef;
 	spriteframe_t *sprframe;
 	patch_t *patch;
@@ -12137,11 +12138,11 @@ static void M_DrawSetupMultiPlayerMenu(void)
 
 #define chary (y+64)
 
+	scale = FixedDiv(skins[setupm_fakeskin].highresscale, skins[setupm_fakeskin].shieldscale);
 	V_DrawFixedPatch(
-		x<<FRACBITS,
+		(x<<FRACBITS) - ((skins[setupm_fakeskin].flags & SF_ODDCENTER) ? (scale/2) : 0),
 		chary<<FRACBITS,
-		FixedDiv(skins[setupm_fakeskin].highresscale, skins[setupm_fakeskin].shieldscale),
-		flags, patch, colormap);
+		scale, flags, patch, colormap);
 
 	goto colordraw;
 

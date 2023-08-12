@@ -186,6 +186,11 @@ void R_DrawFloorSplat(vissprite_t *spr)
 
 	topoffset = spr->spriteyoffset;
 	leftoffset = spr->spritexoffset;
+	if (mobj->skin && ((skin_t *)mobj->skin)->flags & SF_ODDCENTER
+	&& (mobj->sprite2 & ~FF_SPR2SUPER) != SPR2_SIGN
+	&& (mobj->sprite2 & ~FF_SPR2SUPER) != SPR2_LIFE
+	&& (mobj->sprite2 & ~FF_SPR2SUPER) != SPR2_XTRA)
+		leftoffset += INT16_MAX; // offset by half a pixel, not for overlay sprite2s
 	if (hflip)
 		leftoffset = ((splat.width * FRACUNIT) - leftoffset);
 

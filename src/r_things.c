@@ -1828,6 +1828,11 @@ static void R_ProjectSprite(mobj_t *thing)
 		spr_offset += interp.spritexoffset * flipoffset;
 		spr_topoffset += interp.spriteyoffset * flipoffset;
 	}
+	if (thing->skin && ((skin_t *)thing->skin)->flags & SF_ODDCENTER
+	&& (thing->sprite2 & ~FF_SPR2SUPER) != SPR2_SIGN
+	&& (thing->sprite2 & ~FF_SPR2SUPER) != SPR2_LIFE
+	&& (thing->sprite2 & ~FF_SPR2SUPER) != SPR2_XTRA)
+		spr_offset += INT16_MAX; // offset by half a pixel, not for overlay sprite2s
 
 	if (flip)
 		offset = spr_offset - spr_width;
