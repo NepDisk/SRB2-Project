@@ -1832,7 +1832,7 @@ static void R_ProjectSprite(mobj_t *thing)
 	&& (thing->sprite2 & ~FF_SPR2SUPER) != SPR2_SIGN
 	&& (thing->sprite2 & ~FF_SPR2SUPER) != SPR2_LIFE
 	&& (thing->sprite2 & ~FF_SPR2SUPER) != SPR2_XTRA)
-		spr_offset += INT16_MAX; // offset by half a pixel, not for overlay sprite2s
+		spr_offset += FRACUNIT/2; // offset by half a pixel, not for overlay sprite2s
 
 	if (flip)
 		offset = spr_offset - spr_width;
