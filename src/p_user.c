@@ -11386,7 +11386,7 @@ static void P_DoTailsOverlay(player_t *player, mobj_t *tails)
 	tails->y = player->mo->y + P_ReturnThrustY(tails, tails->angle, FixedMul(backwards, tails->scale));
 	tails->z = player->mo->z + zoffs;
 	P_SetThingPosition(tails);
-	
+
 	if (player->mo->flags2 & MF2_SHADOW)
 		tails->flags2 |= MF2_SHADOW;
 	else
@@ -11602,7 +11602,7 @@ void P_PlayerThink(player_t *player)
 		P_SetTarget(&player->awayviewmobj, NULL); // remove awayviewmobj asap if invalid
 		player->awayviewtics = 1; // reset to one, the below code will immediately set it to zero
 	}
-	
+
 	if (player->awayviewtics && player->awayviewtics != -1)
 	{
 		player->awayviewtics--;
@@ -11625,13 +11625,6 @@ void P_PlayerThink(player_t *player)
 		player->mo->flags &= ~MF_NOCLIP;
 
 	cmd = &player->cmd;
-
-	if (demoplayback && demo_forwardmove_rng)
-	{
-		// Smelly demo backwards compatibility
-		if (cmd->forwardmove)
-			P_RandomFixed();
-	}
 
 #ifdef PARANOIA
 	if (player->playerstate == PST_REBORN)
@@ -12274,11 +12267,11 @@ void P_PlayerThink(player_t *player)
 		if (!(player->stronganim))
 			player->stronganim = player->panim;
 		else if (player->panim != player->stronganim)
-			player->powers[pw_strong] = STR_NONE; 
-	}	
+			player->powers[pw_strong] = STR_NONE;
+	}
 	else if (player->stronganim)
 		player->stronganim = 0;
-			
+
 	//pw_super acts as a timer now
 	if (player->powers[pw_super]
 	&& (player->mo->state < &states[S_PLAY_SUPER_TRANS1]
@@ -12385,7 +12378,7 @@ void P_PlayerThink(player_t *player)
 			if (player->jumpfactor < FixedMul(skins[player->skin].jumpfactor, 5*FRACUNIT/4)) // Boost jump height.
 				player->jumpfactor += FRACUNIT/300;
 
-			if ((player->charflags & SF_MACHINE) && (!(player->powers[pw_strong] == STR_METAL))) 
+			if ((player->charflags & SF_MACHINE) && (!(player->powers[pw_strong] == STR_METAL)))
 					player->powers[pw_strong] = STR_METAL;
 		}
 
