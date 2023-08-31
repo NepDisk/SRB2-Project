@@ -1359,10 +1359,8 @@ void D_SRB2Main(void)
 
 	// seed M_Random because it is necessary; seed P_Random for scripts that
 	// might want to use random numbers immediately at start
-	if (!M_RandomSeedFromOS())
-		M_RandomSeed((UINT32)time(NULL)); // less good but serviceable
-
-	P_SetRandSeed(M_RandomizedSeed());
+	M_RandomInitialize();
+	P_RandomInitialize();
 
 	if (M_CheckParm("-password") && M_IsNextParm())
 		D_SetPassword(M_GetNextParm());
