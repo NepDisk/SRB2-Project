@@ -156,7 +156,7 @@ static boolean RandomState_TrySeedFromOS(rnstate_t *state)
 	if (complete_word_count == 0)
 		return false;
 
-	RandomState_Seed(state, (UINT32 *)&seed_data.words, complete_word_count);
+	RandomState_Seed(state, seed_data.words, complete_word_count);
 
 	return true;
 }
@@ -201,7 +201,7 @@ static void RandomState_Initialize(rnstate_t *state)
 		// Copy the seconds value into the seed array, accounting for the
 		// different data types.
 		memcpy(seeds + copy_start, &time_seconds, 2 * sizeof(UINT32));
-		RandomState_Seed(state, &seeds, 3);
+		RandomState_Seed(state, seeds, 3);
 	}
 }
 
@@ -228,7 +228,7 @@ static inline INT32 RandomState_GetRange(rnstate_t *state, INT32 a, INT32 b)
 	}
 
 	const UINT32 spread = b-a+1;
-	return (INT32)((INT64)RandomState_GetKey32(state, spread) + a);
+	return (INT32)((INT64)RandomState_GetKeyU32(state, spread) + a);
 }
 
 static inline INT32 RandomState_GetKeyI32(rnstate_t *state, const INT32 a) {
@@ -242,7 +242,7 @@ static inline INT32 RandomState_GetKeyI32(rnstate_t *state, const INT32 a) {
 	if(range_is_negative)
 		range = -range;
 
-	random_result = RandomState_GetKeyU32(&state, (UINT32)range);
+	random_result = RandomState_GetKeyU32(state, (UINT32)range);
 
 	if(range_is_negative)
 		random_result = -random_result;
@@ -380,7 +380,7 @@ INT32 P_RandomKeyD(const char *rfile, INT32 rline, INT32 a)
 {
 	CONS_Printf("P_RandomKey() at: %sp %d\n", rfile, rline);
 #endif
-	RandomState_GetKeyI32(&p_randomstate, a);
+	return RandomState_GetKeyI32(&p_randomstate, a);
 }
 
 /** Provides a random integer in a given range.

@@ -4858,6 +4858,7 @@ boolean P_LoadGame(INT16 mapoverride)
 
 boolean P_LoadNetGame(boolean reloading)
 {
+	rnstate_t initstate;
 	CV_LoadNetVars(&save_p);
 	if (!P_NetUnArchiveMisc(reloading))
 		return false;
@@ -4877,7 +4878,8 @@ boolean P_LoadNetGame(boolean reloading)
 	LUA_UnArchive();
 
 	// This is stupid and hacky, but maybe it'll work!
-	P_SetRandState(P_GetInitState());
+	initstate = P_GetInitState();
+	P_SetRandState(&initstate);
 
 	// The precipitation would normally be spawned in P_SetupLevel, which is called by
 	// P_NetUnArchiveMisc above. However, that would place it up before P_NetUnArchiveThinkers,
