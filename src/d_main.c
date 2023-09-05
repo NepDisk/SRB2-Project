@@ -1358,7 +1358,7 @@ void D_SRB2Main(void)
 	I_mkdir(addonsdir, 0755);
 
 	// seed M_Random because it is necessary; seed P_Random for scripts that
-	// might want to use random numbers immediately at start
+	// might want to use random numbers immediately at start.
 	M_RandomInitialize();
 	P_RandomInitialize();
 

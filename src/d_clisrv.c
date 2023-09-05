@@ -3965,6 +3965,7 @@ boolean SV_SpawnServer(void)
 	if (!serverrunning)
 	{
 		CONS_Printf(M_GetText("Starting Server....\n"));
+		P_RandomInitialize();
 		serverrunning = true;
 		SV_ResetServer();
 		SV_GenContext();
@@ -5672,7 +5673,11 @@ void NetUpdate(void)
 				{
 					const char *idlereason = "at round start";
 					if (leveltime > 3)
+					{
+						// Reseed P_Random whenever the server goes idle?
+						P_RandomInitialize();
 						idlereason = va("for %d seconds", dedicatedidle/TICRATE);
+					}
 
 					CONS_Printf("DEDICATED: No nodes %s, idling...\n", idlereason);
 					realtics = 0;
