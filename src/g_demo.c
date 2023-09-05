@@ -2425,17 +2425,10 @@ void G_AddGhost(char *defdemoname)
 	p++; // VERSION
 	subversion = READUINT8(p); // SUBVERSION
 	ghostversion = READUINT16(p);
+	cnamelen = MAXCOLORNAME;
 	switch(ghostversion)
 	{
-	case 0x000f:
-	case 0x000d:
-	case 0x000e:
 	case DEMOVERSION: // latest always supported
-		cnamelen = MAXCOLORNAME;
-		break;
-	// all that changed between then and now was longer color name
-	case 0x000c:
-		cnamelen = 16;
 		break;
 	// too old, cannot support.
 	default:
@@ -2490,7 +2483,8 @@ void G_AddGhost(char *defdemoname)
 		break;
 	}
 
-	p += 4; // random seed
+
+	p += 16; // random state
 
 	// Player name (TODO: Display this somehow if it doesn't match cv_playername!)
 	M_Memcpy(name, p,16);
@@ -2688,10 +2682,6 @@ void G_DoPlayMetal(void)
 	switch(metalversion)
 	{
 	case DEMOVERSION: // latest always supported
-	case 0x000f:
-	case 0x000e: // There are checks wheter the momentum is from older demo versions or not
-	case 0x000d: // all that changed between then and now was longer color name
-	case 0x000c:
 		break;
 	// too old, cannot support.
 	default:
