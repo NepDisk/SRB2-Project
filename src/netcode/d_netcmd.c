@@ -1281,7 +1281,7 @@ static void SendNameAndColor(void)
 
 		SetColorLocal(consoleplayer, cv_playercolor.value);
 
-		if (splitscreen)
+		if (splitscreen || pickedchar == -1)
 			SetSkinLocal(consoleplayer, R_SkinAvailable(cv_skin.string));
 		else
 			SetSkinLocal(consoleplayer, pickedchar);
@@ -4748,7 +4748,10 @@ static void Name2_OnChange(void)
 static void Skin_OnChange(void)
 {
 	if (!Playing())
+	{
+		pickedchar = R_SkinAvailable(cv_skin.string); // Update picked character for single player
 		return; // do whatever you want
+	}
 
 	if (lastskinnames[0] == NULL)
 		lastskinnames[0] = Z_StrDup(cv_skin.string);
@@ -4778,6 +4781,8 @@ static void Skin_OnChange(void)
 		CONS_Alert(CONS_NOTICE, M_GetText("You can't change your skin at the moment.\n"));
 		CV_StealthSet(&cv_skin, lastskinnames[0]);
 	}
+	
+	pickedchar = cv_skin.value; // Update picked character for single player
 }
 
 /** Sends a skin change for the secondary splitscreen player, unless that
