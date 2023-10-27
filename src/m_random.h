@@ -30,7 +30,7 @@ fixed_t M_RandomFixed(void);
 UINT8   M_RandomByte(void);
 INT32   M_RandomKey(INT32 a);
 INT32   M_RandomRange(INT32 a, INT32 b);
-void    M_RandomInitialize();
+void    M_RandomInitialize(void);
 
 // PRNG functions
 #ifdef DEBUGRANDOM
