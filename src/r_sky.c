@@ -2,7 +2,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (C) 1993-1996 by id Software, Inc.
 // Copyright (C) 1998-2000 by DooM Legacy Team.
-// Copyright (C) 1999-2022 by Sonic Team Junior.
+// Copyright (C) 1999-2023 by Sonic Team Junior.
 //
 // This program is free software distributed under the
 // terms of the GNU General Public License, version 2.
@@ -47,7 +47,7 @@ fixed_t skyscale;
 
 /** \brief used for keeping track of the current sky
 */
-const char *levelsky; // formerly INT32
+char *levelsky; // formerly INT32
 const char *globallevelsky; // formerly INT32
 
 /**	\brief	The R_SetupSkyDraw function

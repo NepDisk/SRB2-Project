@@ -2,7 +2,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (C) 1993-1996 by id Software, Inc.
 // Copyright (C) 1998-2000 by DooM Legacy Team.
-// Copyright (C) 1999-2022 by Sonic Team Junior.
+// Copyright (C) 1999-2023 by Sonic Team Junior.
 //
 // This program is free software distributed under the
 // terms of the GNU General Public License, version 2.
@@ -30,7 +30,7 @@ extern INT32 skytexture, skytexturemid;
 extern fixed_t skyscale;
 
 extern INT32 skyflatnum;
-extern const char *levelsky; // formerly INT32
+extern char *levelsky; // formerly INT32
 extern const char *globallevelsky; // formerly INT32
 
 // call after skytexture is set to adapt for old/new skies
