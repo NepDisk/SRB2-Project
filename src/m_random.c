@@ -487,8 +487,4 @@ void P_SetRandStateD(const char *rfile, INT32 rline, const rnstate_t *state)
 #endif
 	p_randomstate = *state;
 	p_initialstate = *state;
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 9f22517d7dca128a77060e06a2f232e46b57abb8
