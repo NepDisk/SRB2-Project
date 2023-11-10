@@ -2031,15 +2031,6 @@ void G_DoPlayDemo(char *defdemoname)
 	version = READUINT8(demo_p);
 	subversion = READUINT8(demo_p);
 	demoversion = READUINT16(demo_p);
-<<<<<<< HEAD
-	cnamelen = MAXCOLORNAME;
-	switch(demoversion)
-	{
-	case DEMOVERSION: // latest always supported
-		break;
-	// too old, cannot support.
-	default:
-=======
 	demo_forwardmove_rng = (demoversion < 0x0010);
 #ifdef OLD22DEMOCOMPAT
 	if (demoversion < 0x000c || demoversion > DEMOVERSION)
@@ -2048,7 +2039,6 @@ void G_DoPlayDemo(char *defdemoname)
 #endif
 	{
 		// too old (or new), cannot support
->>>>>>> next
 		snprintf(msg, 1024, M_GetText("%s is an incompatible replay format and cannot be played.\n"), pdemoname);
 		CONS_Alert(CONS_ERROR, "%s", msg);
 		M_StartMessage(msg, NULL, MM_NOTHING);
