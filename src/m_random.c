@@ -161,8 +161,7 @@ static boolean RandomState_TrySeedFromOS(rnstate_t *state)
 	return true;
 }
 
-#if ((__STDC_VERSION__ >= 201112L) || \
-(((__GNUC__ >= 5) || (__clang_major__ >= 4)) && !defined(__STRICT_ANSI__)))
+#if (__STDC_VERSION__ >= 201112L)
 #define HAS_TIMESPEC
 #endif
 
