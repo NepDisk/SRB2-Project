@@ -310,7 +310,7 @@ INT32 M_RandomRange(INT32 a, INT32 b)
 
 /** Initializes the M_Random PRNG using a random seed.
   */
-void M_RandomInitialize()
+void M_RandomInitialize(void)
 {
 	RandomState_Initialize(&m_randomstate);
 }
@@ -404,7 +404,7 @@ INT32 P_RandomRangeD(const char *rfile, INT32 rline, INT32 a, INT32 b)
 }
 
 #ifndef DEBUGRANDOM
-void P_RandomInitialize()
+void P_RandomInitialize(void)
 {
 #else
 UINT32 P_RandomInitializeD(const char *rfile, INT32 rline)
@@ -488,4 +488,8 @@ void P_SetRandStateD(const char *rfile, INT32 rline, const rnstate_t *state)
 #endif
 	p_randomstate = *state;
 	p_initialstate = *state;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 9f22517d7dca128a77060e06a2f232e46b57abb8
