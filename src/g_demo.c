@@ -15,7 +15,7 @@
 #include "console.h"
 #include "d_main.h"
 #include "d_player.h"
-#include "d_clisrv.h"
+#include "netcode/d_clisrv.h"
 #include "p_setup.h"
 #include "i_time.h"
 #include "i_system.h"
@@ -39,7 +39,7 @@
 #include "v_video.h"
 #include "lua_hook.h"
 #include "md5.h" // demo checksums
-#include "d_netfil.h" // G_CheckDemoExtraFiles
+#include "netcode/d_netfil.h" // G_CheckDemoExtraFiles
 
 boolean timingdemo; // if true, exit with report on completion
 boolean nodrawers; // for comparative timing purposes
@@ -1496,16 +1496,21 @@ void G_BeginRecording(void)
 	demo_p += 16;
 
 	// Skin
-	for (i = 0; i < 16 && cv_skin.string[i]; i++)
-		name[i] = cv_skin.string[i];
+	const char *skinname = skins[players[0].skin].name;
+	for (i = 0; i < 16 && skinname[i]; i++)
+		name[i] = skinname[i];
 	for (; i < 16; i++)
 		name[i] = '\0';
 	M_Memcpy(demo_p,name,16);
 	demo_p += 16;
 
 	// Color
-	for (i = 0; i < MAXCOLORNAME && cv_playercolor.string[i]; i++)
-		name[i] = cv_playercolor.string[i];
+	UINT16 skincolor = players[0].skincolor;
+	if (skincolor >= numskincolors)
+		skincolor = SKINCOLOR_NONE;
+	const char *skincolor_name = skincolors[skincolor].name;
+	for (i = 0; i < MAXCOLORNAME && skincolor_name[i]; i++)
+		name[i] = skincolor_name[i];
 	for (; i < MAXCOLORNAME; i++)
 		name[i] = '\0';
 	M_Memcpy(demo_p,name,MAXCOLORNAME);
@@ -1891,12 +1896,9 @@ UINT8 G_CmpDemoTime(char *oldname, char *newname)
 	p++; // VERSION
 	p++; // SUBVERSION
 	oldversion = READUINT16(p);
-	switch(oldversion) // demoversion
+	if (oldversion < DEMOVERSION || oldversion > DEMOVERSION)
 	{
-	case DEMOVERSION: // latest always supported.
-		break;
-	// too old, cannot support.
-	default:
+		// too old (or new), cannot support
 		CONS_Alert(CONS_NOTICE, M_GetText("File '%s' invalid format. It will be overwritten.\n"), oldname);
 		Z_Free(buffer);
 		return UINT8_MAX;
@@ -1966,15 +1968,12 @@ void G_DoPlayDemo(char *defdemoname)
 	UINT8 i;
 	lumpnum_t l;
 	char skin[17],color[MAXCOLORNAME+1],*n,*pdemoname;
-	UINT8 version,subversion,charability,charability2,thrustfactor,accelstart,acceleration,cnamelen;
+	UINT8 version,subversion,charability,charability2,thrustfactor,accelstart,acceleration;
 	pflags_t pflags;
 	UINT32 followitem;
 	rnstate_t randstate;
 	fixed_t camerascale,shieldscale,actionspd,mindash,maxdash,normalspeed,runspeed,jumpfactor,height,spinheight;
 	char msg[1024];
-#ifdef OLD22DEMOCOMPAT
-	boolean use_old_demo_vars = false;
-#endif
 
 	skin[16] = '\0';
 	color[MAXCOLORNAME] = '\0';
@@ -2032,6 +2031,7 @@ void G_DoPlayDemo(char *defdemoname)
 	version = READUINT8(demo_p);
 	subversion = READUINT8(demo_p);
 	demoversion = READUINT16(demo_p);
+<<<<<<< HEAD
 	cnamelen = MAXCOLORNAME;
 	switch(demoversion)
 	{
@@ -2039,6 +2039,16 @@ void G_DoPlayDemo(char *defdemoname)
 		break;
 	// too old, cannot support.
 	default:
+=======
+	demo_forwardmove_rng = (demoversion < 0x0010);
+#ifdef OLD22DEMOCOMPAT
+	if (demoversion < 0x000c || demoversion > DEMOVERSION)
+#else
+	if (demoversion < 0x000d || demoversion > DEMOVERSION)
+#endif
+	{
+		// too old (or new), cannot support
+>>>>>>> next
 		snprintf(msg, 1024, M_GetText("%s is an incompatible replay format and cannot be played.\n"), pdemoname);
 		CONS_Alert(CONS_ERROR, "%s", msg);
 		M_StartMessage(msg, NULL, MM_NOTHING);
@@ -2168,8 +2178,8 @@ void G_DoPlayDemo(char *defdemoname)
 	demo_p += 16;
 
 	// Color
-	M_Memcpy(color,demo_p,cnamelen);
-	demo_p += cnamelen;
+	M_Memcpy(color, demo_p, (demoversion < 0x000d) ? 16 : MAXCOLORNAME);
+	demo_p += (demoversion < 0x000d) ? 16 : MAXCOLORNAME;
 
 	charability = READUINT8(demo_p);
 	charability2 = READUINT8(demo_p);
@@ -2205,7 +2215,7 @@ void G_DoPlayDemo(char *defdemoname)
 
 	// net var data
 #ifdef OLD22DEMOCOMPAT
-	if (use_old_demo_vars)
+	if (demoversion < 0x000d)
 		CV_LoadOldDemoVars(&demo_p);
 	else
 #endif
@@ -2253,7 +2263,6 @@ void G_DoPlayDemo(char *defdemoname)
 			players[0].skincolor = i;
 			break;
 		}
-	CV_StealthSetValue(&cv_playercolor, players[0].skincolor);
 	if (players[0].mo)
 	{
 		players[0].mo->color = players[0].skincolor;
@@ -2339,19 +2348,13 @@ UINT8 G_CheckDemoForError(char *defdemoname)
 	demo_p++; // version
 	demo_p++; // subversion
 	our_demo_version = READUINT16(demo_p);
-	switch(our_demo_version)
-	{
-	case 0x000d:
-	case 0x000e:
-	case 0x000f:
-	case DEMOVERSION: // latest always supported
-		break;
 #ifdef OLD22DEMOCOMPAT
-	case 0x000c:
-		break;
+	if (our_demo_version < 0x000c || our_demo_version > DEMOVERSION)
+#else
+	if (our_demo_version < 0x000d || our_demo_version > DEMOVERSION)
 #endif
-	// too old, cannot support.
-	default:
+	{
+		// too old (or new), cannot support
 		return DFILE_ERROR_NOTDEMO;
 	}
 	demo_p += 16; // demo checksum
@@ -2373,7 +2376,6 @@ void G_AddGhost(char *defdemoname)
 	INT32 i;
 	lumpnum_t l;
 	char name[17],skin[17],color[MAXCOLORNAME+1],*n,*pdemoname,md5[16];
-	UINT8 cnamelen;
 	demoghost *gh;
 	UINT8 flags, subversion;
 	UINT8 *buffer,*p;
@@ -2425,13 +2427,9 @@ void G_AddGhost(char *defdemoname)
 	p++; // VERSION
 	subversion = READUINT8(p); // SUBVERSION
 	ghostversion = READUINT16(p);
-	cnamelen = MAXCOLORNAME;
-	switch(ghostversion)
+	if (ghostversion < DEMOVERSION || ghostversion > DEMOVERSION)
 	{
-	case DEMOVERSION: // latest always supported
-		break;
-	// too old, cannot support.
-	default:
+		// too old (or new), cannot support
 		CONS_Alert(CONS_NOTICE, M_GetText("Ghost %s: Demo version incompatible.\n"), pdemoname);
 		Z_Free(pdemoname);
 		Z_Free(buffer);
@@ -2495,8 +2493,8 @@ void G_AddGhost(char *defdemoname)
 	p += 16;
 
 	// Color
-	M_Memcpy(color, p,cnamelen);
-	p += cnamelen;
+	M_Memcpy(color, p, (ghostversion < 0x000d) ? 16 : MAXCOLORNAME);
+	p += (ghostversion < 0x000d) ? 16 : MAXCOLORNAME;
 
 	// Ghosts do not have a player structure to put this in.
 	p++; // charability
@@ -2679,12 +2677,9 @@ void G_DoPlayMetal(void)
 	metal_p++; // VERSION
 	metal_p++; // SUBVERSION
 	metalversion = READUINT16(metal_p);
-	switch(metalversion)
+	if (metalversion < DEMOVERSION || metalversion > DEMOVERSION)
 	{
-	case DEMOVERSION: // latest always supported
-		break;
-	// too old, cannot support.
-	default:
+		// too old (or new), cannot support
 		CONS_Alert(CONS_WARNING, M_GetText("Failed to load bot recording for this map, format version incompatible.\n"));
 		Z_Free(metalbuffer);
 		return;
