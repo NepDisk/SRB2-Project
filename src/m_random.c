@@ -161,7 +161,7 @@ static boolean RandomState_TrySeedFromOS(rnstate_t *state)
 	return true;
 }
 
-#if (__STDC_VERSION__ >= 201112L)
+#if (__STDC_VERSION__ >= 201112L) && !defined(_WIN32)
 #define HAS_TIMESPEC
 #endif
 
