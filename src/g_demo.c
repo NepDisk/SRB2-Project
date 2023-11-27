@@ -2262,11 +2262,12 @@ void G_DoPlayDemo(char *defdemoname)
 	playeringame[0] = true;
 	if (demoversion <= 0x0010)
 	{
-		P_SetRandState(&randstate);
+		P_SetOldRandSeed(randseed);
+
 	}
 	else
 	{
-		P_SetOldRandSeed(randseed);
+		P_SetRandState(&randstate);
 	}
 	G_InitNew(false, G_BuildMapName(gamemap), true, true, false);
 
