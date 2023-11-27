@@ -2033,6 +2033,7 @@ void G_DoPlayDemo(char *defdemoname)
 	version = READUINT8(demo_p);
 	subversion = READUINT8(demo_p);
 	demoversion = READUINT16(demo_p);
+
 	demorngmode = DRM_NEW;
 	if (demoversion < 0x0010)
 	{
@@ -2042,6 +2043,7 @@ void G_DoPlayDemo(char *defdemoname)
 	{
 		demorngmode = DRM_OLD;
 	}
+
 #ifdef OLD22DEMOCOMPAT
 	if (demoversion < 0x000c || demoversion > DEMOVERSION)
 #else
@@ -2164,7 +2166,7 @@ void G_DoPlayDemo(char *defdemoname)
 	}
 
 	// Random seed
-	if (demorngmode != DRM_NEW)
+	if (demoversion <= 0x0010)
 	{
 		randseed = READUINT32(demo_p);
 	}
@@ -2258,7 +2260,7 @@ void G_DoPlayDemo(char *defdemoname)
 	displayplayer = consoleplayer = 0;
 	memset(playeringame,0,sizeof(playeringame));
 	playeringame[0] = true;
-	if (demorngmode == DRM_NEW)
+	if (demoversion <= 0x0010)
 	{
 		P_SetRandState(&randstate);
 	}
