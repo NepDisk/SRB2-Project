@@ -58,7 +58,10 @@ INT32   P_RandomRange(INT32 a, INT32 b);
 
 // Debugging
 UINT32 P_RandomPeek(void);
-UINT32 P_GetRandCounter(void);
+UINT32 P_GetRandDebugValue(void);
+void P_SetOldRandSeed(UINT32 seed);
+
+boolean P_UseOldRng(void);
 
 typedef struct rnstate_s {
 	UINT32 data[3];

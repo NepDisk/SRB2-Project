@@ -58,6 +58,7 @@ static UINT8 demoflags;
 static UINT16 demoversion;
 boolean singledemo; // quit after playing a demo from cmdline
 boolean demo_start; // don't start playing demo right away
+demo_rng_mode_e demorngmode = DRM_NEW;
 boolean demosynced = true; // console warning message
 
 boolean metalrecording; // recording as metal sonic
@@ -556,11 +557,11 @@ void G_ConsGhostTic(void)
 	{
 		if (ziptic & GZT_MOMXY)
 		{
-			oldghost.momx = READFIXED(demo_p);
-			oldghost.momy = READFIXED(demo_p);
+			oldghost.momx = (demoversion < 0x000e) ? READINT16(demo_p)<<8 : READFIXED(demo_p);
+			oldghost.momy = (demoversion < 0x000e) ? READINT16(demo_p)<<8 : READFIXED(demo_p);
 		}
 		if (ziptic & GZT_MOMZ)
-			oldghost.momz = READFIXED(demo_p);
+			oldghost.momz = (demoversion < 0x000e) ? READINT16(demo_p)<<8 : READFIXED(demo_p);
 		oldghost.x += oldghost.momx;
 		oldghost.y += oldghost.momy;
 		oldghost.z += oldghost.momz;
@@ -576,7 +577,7 @@ void G_ConsGhostTic(void)
 	{ // But wait, there's more!
 		UINT8 xziptic = READUINT8(demo_p);
 		if (xziptic & EZT_COLOR)
-			demo_p += sizeof(UINT16);
+			demo_p += (demoversion==0x000c) ? 1 : sizeof(UINT16);
 		if (xziptic & EZT_SCALE)
 			demo_p += sizeof(fixed_t);
 		if (xziptic & EZT_HIT)
@@ -622,7 +623,7 @@ void G_ConsGhostTic(void)
 		if (xziptic & EZT_SPRITE)
 			demo_p += sizeof(UINT16);
 		if (xziptic & EZT_HEIGHT)
-			demo_p += sizeof(fixed_t);
+			demo_p += (demoversion < 0x000e) ? sizeof(INT16) : sizeof(fixed_t);
 	}
 
 	if (ziptic & GZT_FOLLOW)
@@ -637,12 +638,12 @@ void G_ConsGhostTic(void)
 		if (followtic & FZT_SCALE)
 			demo_p += sizeof(fixed_t);
 		// momx, momy and momz
-		demo_p += sizeof(fixed_t) * 3;
+		demo_p += (demoversion < 0x000e) ? sizeof(INT16) * 3 : sizeof(fixed_t) * 3;
 		if (followtic & FZT_SKIN)
 			demo_p++;
 		demo_p += sizeof(UINT16);
 		demo_p++;
-		demo_p += sizeof(UINT16);
+		demo_p += (demoversion==0x000c) ? 1 : sizeof(UINT16);
 	}
 
 	// Re-synchronise
@@ -1413,7 +1414,6 @@ void G_BeginRecording(void)
 {
 	UINT8 i;
 	char name[MAXCOLORNAME+1];
-	rnstate_t randstate;
 	player_t *player = &players[consoleplayer];
 
 	char *filename;
@@ -1481,11 +1481,10 @@ void G_BeginRecording(void)
 			break;
 	}
 
-	randstate = P_GetInitState();
-
+	const rnstate_t initstate = P_GetInitState();
 	for (i = 0; i < 3; i++)
-		WRITEUINT32(demo_p,randstate.data[i]);
-	WRITEUINT32(demo_p,randstate.counter);
+		WRITEUINT32(demo_p, initstate.data[i]);
+	WRITEUINT32(demo_p, initstate.counter);
 
 	// Name
 	for (i = 0; i < 16 && cv_playername.string[i]; i++)
@@ -1896,7 +1895,7 @@ UINT8 G_CmpDemoTime(char *oldname, char *newname)
 	p++; // VERSION
 	p++; // SUBVERSION
 	oldversion = READUINT16(p);
-	if (oldversion < DEMOVERSION || oldversion > DEMOVERSION)
+	if (oldversion < 0x000c || oldversion > DEMOVERSION)
 	{
 		// too old (or new), cannot support
 		CONS_Alert(CONS_NOTICE, M_GetText("File '%s' invalid format. It will be overwritten.\n"), oldname);
@@ -1910,7 +1909,10 @@ UINT8 G_CmpDemoTime(char *oldname, char *newname)
 		Z_Free(buffer);
 		return UINT8_MAX;
 	} p += 4; // "PLAY"
-	p += 2; // gamemap
+	if (oldversion <= 0x0008)
+		p++; // gamemap
+	else
+		p += 2; // gamemap
 	p += 16; // mapmd5
 	flags = READUINT8(p);
 	G_SkipDemoExtraFiles(&p, oldversion);
@@ -1970,7 +1972,7 @@ void G_DoPlayDemo(char *defdemoname)
 	char skin[17],color[MAXCOLORNAME+1],*n,*pdemoname;
 	UINT8 version,subversion,charability,charability2,thrustfactor,accelstart,acceleration;
 	pflags_t pflags;
-	UINT32 followitem;
+	UINT32 randseed, followitem;
 	rnstate_t randstate;
 	fixed_t camerascale,shieldscale,actionspd,mindash,maxdash,normalspeed,runspeed,jumpfactor,height,spinheight;
 	char msg[1024];
@@ -2031,7 +2033,20 @@ void G_DoPlayDemo(char *defdemoname)
 	version = READUINT8(demo_p);
 	subversion = READUINT8(demo_p);
 	demoversion = READUINT16(demo_p);
-	if (demoversion < DEMOVERSION || demoversion > DEMOVERSION)
+	demorngmode = DRM_NEW;
+	if (demoversion < 0x0010)
+	{
+		demorngmode = DRM_OLD_FORWARDMOVE;
+	}
+	else if (demoversion == 0x0010)
+	{
+		demorngmode = DRM_OLD;
+	}
+#ifdef OLD22DEMOCOMPAT
+	if (demoversion < 0x000c || demoversion > DEMOVERSION)
+#else
+	if (demoversion < 0x000d || demoversion > DEMOVERSION)
+#endif
 	{
 		// too old (or new), cannot support
 		snprintf(msg, 1024, M_GetText("%s is an incompatible replay format and cannot be played.\n"), pdemoname);
@@ -2149,10 +2164,16 @@ void G_DoPlayDemo(char *defdemoname)
 	}
 
 	// Random seed
-	for (i = 0; i < 3; i++)
-		randstate.data[i] = READUINT32(demo_p);
-	randstate.counter = READUINT32(demo_p);
-	P_SetRandState(&randstate);
+	if (demorngmode != DRM_NEW)
+	{
+		randseed = READUINT32(demo_p);
+	}
+	else
+	{
+		for (i = 0; i < 3; i++)
+			randstate.data[i] = READINT32(demo_p);
+		randstate.counter = READINT32(demo_p);
+	}
 
 	// Player name
 	M_Memcpy(player_names[0],demo_p,16);
@@ -2168,18 +2189,18 @@ void G_DoPlayDemo(char *defdemoname)
 
 	charability = READUINT8(demo_p);
 	charability2 = READUINT8(demo_p);
-	actionspd = READFIXED(demo_p);
-	mindash = READFIXED(demo_p);
-	maxdash = READFIXED(demo_p);
-	normalspeed = READFIXED(demo_p);
-	runspeed = READFIXED(demo_p);
+	actionspd = (demoversion < 0x0010) ? (fixed_t)READUINT8(demo_p)<<FRACBITS : READFIXED(demo_p);
+	mindash = (demoversion < 0x0010) ? (fixed_t)READUINT8(demo_p)<<FRACBITS : READFIXED(demo_p);
+	maxdash = (demoversion < 0x0010) ? (fixed_t)READUINT8(demo_p)<<FRACBITS : READFIXED(demo_p);
+	normalspeed = (demoversion < 0x0010) ? (fixed_t)READUINT8(demo_p)<<FRACBITS : READFIXED(demo_p);
+	runspeed = (demoversion < 0x0010) ? (fixed_t)READUINT8(demo_p)<<FRACBITS : READFIXED(demo_p);
 	thrustfactor = READUINT8(demo_p);
 	accelstart = READUINT8(demo_p);
 	acceleration = READUINT8(demo_p);
-	height = READFIXED(demo_p);
-	spinheight = READFIXED(demo_p);
-	camerascale = READFIXED(demo_p);
-	shieldscale = READFIXED(demo_p);
+	height = (demoversion < 0x000e) ? (fixed_t)READUINT8(demo_p)<<FRACBITS : READFIXED(demo_p);
+	spinheight = (demoversion < 0x000e) ? (fixed_t)READUINT8(demo_p)<<FRACBITS : READFIXED(demo_p);
+	camerascale = (demoversion < 0x0010) ? (fixed_t)READUINT8(demo_p)<<FRACBITS : READFIXED(demo_p);
+	shieldscale = (demoversion < 0x0010) ? (fixed_t)READUINT8(demo_p)<<FRACBITS : READFIXED(demo_p);
 	jumpfactor = READFIXED(demo_p);
 	followitem = READUINT32(demo_p);
 
@@ -2237,7 +2258,14 @@ void G_DoPlayDemo(char *defdemoname)
 	displayplayer = consoleplayer = 0;
 	memset(playeringame,0,sizeof(playeringame));
 	playeringame[0] = true;
-	P_SetRandState(&randstate);
+	if (demorngmode == DRM_NEW)
+	{
+		P_SetRandState(&randstate);
+	}
+	else
+	{
+		P_SetOldRandSeed(randseed);
+	}
 	G_InitNew(false, G_BuildMapName(gamemap), true, true, false);
 
 	// Set color
@@ -2412,7 +2440,7 @@ void G_AddGhost(char *defdemoname)
 	p++; // VERSION
 	subversion = READUINT8(p); // SUBVERSION
 	ghostversion = READUINT16(p);
-	if (ghostversion < DEMOVERSION || ghostversion > DEMOVERSION)
+	if (ghostversion < 0x000c || ghostversion > DEMOVERSION)
 	{
 		// too old (or new), cannot support
 		CONS_Alert(CONS_NOTICE, M_GetText("Ghost %s: Demo version incompatible.\n"), pdemoname);
@@ -2466,8 +2494,7 @@ void G_AddGhost(char *defdemoname)
 		break;
 	}
 
-
-	p += 16; // random state
+	p += 4; // random seed
 
 	// Player name (TODO: Display this somehow if it doesn't match cv_playername!)
 	M_Memcpy(name, p,16);
@@ -2662,7 +2689,7 @@ void G_DoPlayMetal(void)
 	metal_p++; // VERSION
 	metal_p++; // SUBVERSION
 	metalversion = READUINT16(metal_p);
-	if (metalversion < DEMOVERSION || metalversion > DEMOVERSION)
+	if (metalversion < 0x000c || metalversion > DEMOVERSION)
 	{
 		// too old (or new), cannot support
 		CONS_Alert(CONS_WARNING, M_GetText("Failed to load bot recording for this map, format version incompatible.\n"));
@@ -2841,9 +2868,6 @@ void G_StopDemo(void)
 	wipegamestate = GS_NULL;
 	SV_StopServer();
 	SV_ResetServer();
-
-	// reseed the PRNG so the demo's PRNG state isn't in use anymore
-	P_RandomInitialize();
 }
 
 boolean G_CheckDemoStatus(void)

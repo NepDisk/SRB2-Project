@@ -546,14 +546,19 @@ static void ST_drawDebugInfo(void)
 
 	if (cv_debug & DBG_RANDOMIZER) // randomizer testing
 	{
-		UINT32 peekres = P_RandomPeek();
-		fixed_t peekres_fixed = (fixed_t)(peekres >> (32-FRACBITS));
-		peekres_fixed *= 10000;     // Change from fixed point
-		peekres_fixed >>= FRACBITS; // to displayable decimal
+		UINT32 peekres =  P_RandomPeek();
+		UINT32 debug = P_GetRandDebugValue();
 
-		V_DrawDebugLine(va("Cntr: %08x", P_GetRandCounter()));
+		if(P_UseOldRng())
+		{
+			V_DrawDebugLine("RNGMode: Old");
+		}
+		else
+		{
+			V_DrawDebugLine("RNGMode: New");
+		}
+		V_DrawDebugLine(va("DVal: %08x", debug));
 		V_DrawDebugLine(va("Next: %08x", peekres));
-		V_DrawDebugLine(va("==  :    .%04d", peekres_fixed));
 
 		height += h/2;
 	}
