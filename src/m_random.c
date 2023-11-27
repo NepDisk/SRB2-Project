@@ -162,6 +162,7 @@ static boolean RandomState_TrySeedFromOS(rnstate_t *state)
 	return true;
 }
 
+// timespec is part of C11 and later, but Win32 appears not to support it...
 #if (__STDC_VERSION__ >= 201112L) && !defined(_WIN32)
 #define HAS_TIMESPEC
 #endif
@@ -333,16 +334,23 @@ static rnstate_t p_initialstate = {
 
 // Backwards compatibility RNG for old demos.
 // Should be removed for 2.3.
+static boolean oldrng = false;
+static UINT32 old_randomseed = 0xBADE4404;
+
+/** Returns whether the old RNG is in use.
+  * Currently only used by the RNG debug information.
+  *
+  * \return Whether the old RNG is in use.
+  */
 boolean P_UseOldRng(void)
 {
-	return demoplayback && demorngmode != DRM_NEW;
+	return oldrng;
 }
-
-static UINT32 old_randomseed = 0xBADE4404;
 
 void P_SetOldRandSeed(UINT32 seed)
 {
 	if (!seed) seed = 0xBADE4404;
+	oldrng = true;
 	old_randomseed = seed;
 }
 
@@ -367,7 +375,7 @@ fixed_t P_RandomFixedD(const char *rfile, INT32 rline)
 {
 	CONS_Printf("P_RandomFixed() at: %sp %d\n", rfile, rline);
 #endif
-	if (P_UseOldRng())
+	if (oldrng)
 		return __old_internal_prng__();
 	return RandomState_GetFixed(&p_randomstate);
 }
@@ -387,14 +395,14 @@ UINT8 P_RandomByteD(const char *rfile, INT32 rline)
 {
 	CONS_Printf("P_RandomByte() at: %sp %d\n", rfile, rline);
 #endif
-	if (P_UseOldRng())
+	if (oldrng)
 		return (UINT8)((__old_internal_prng__()&0xFF00)>>8);
 	return RandomState_Get32(&p_randomstate) >> 24;
 }
 
 /** Provides a random integer for picking random elements from an array.
   * Distribution is uniform.
-  * NOTE: Maximum range is 65536.
+  * NOTE: Maximum range is 65536 if using the old RNG.
   *
   * \param a Number of items in array.
   * \return A random integer from [0,a).
@@ -408,7 +416,7 @@ INT32 P_RandomKeyD(const char *rfile, INT32 rline, INT32 a)
 {
 	CONS_Printf("P_RandomKey() at: %sp %d\n", rfile, rline);
 #endif
-	if (P_UseOldRng())
+	if (oldrng)
 		return (INT32)(((INT64)__old_internal_prng__() * a) >> FRACBITS);
 	return RandomState_GetKeyI32(&p_randomstate, a);
 }
@@ -430,7 +438,7 @@ INT32 P_RandomRangeD(const char *rfile, INT32 rline, INT32 a, INT32 b)
 {
 	CONS_Printf("P_RandomRange() at: %sp %d\n", rfile, rline);
 #endif
-	if (P_UseOldRng())
+	if (oldrng)
 		return (INT32)(((INT64)__old_internal_prng__() * (b-a+1)) >> FRACBITS) + a;
 	return RandomState_GetRange(&p_randomstate, a, b);
 }
@@ -444,6 +452,7 @@ UINT32 P_RandomInitializeD(const char *rfile, INT32 rline)
 	CONS_Printf("P_RandomInitialize() at: %sp %d\n", rfile, rline);
 #endif
 	RandomState_Initialize(&p_randomstate);
+	oldrng = false;
 	p_initialstate = p_randomstate;
 }
 
@@ -458,7 +467,7 @@ UINT32 P_RandomInitializeD(const char *rfile, INT32 rline)
   */
 UINT32 P_RandomPeek(void)
 {
-	if (P_UseOldRng())
+	if (oldrng)
 	{
 		UINT32 r = old_randomseed;
 		fixed_t ret = __old_internal_prng__();
@@ -469,15 +478,15 @@ UINT32 P_RandomPeek(void)
 	return RandomState_Peek32(&p_randomstate);
 }
 
-/** Gets the current value of the counter part of the PRNG state.
-  * Perhaps useful for debugging; the counter value diverging would indicate
-  * that the PRNG value has diverged.
+/** Gets the current value of some part of the RNG state.
+  * Perhaps useful for debugging; the value diverging would indicate that the
+  * PRNG value has diverged. It is also used in Consistancy.
   *
-  * \return The current value of the SFC32 counter.
+  * \return The current value of some part of the RNG state.
   */
 UINT32 P_GetRandDebugValue(void)
 {
-	if (P_UseOldRng())
+	if (oldrng)
 	{
 		return old_randomseed;
 	}
@@ -530,6 +539,7 @@ void P_SetRandStateD(const char *rfile, INT32 rline, const rnstate_t *state)
 {
 	CONS_Printf("P_SetRandState() at: %sp %d\n", rfile, rline);
 #endif
+	oldrng = false;
 	p_randomstate = *state;
 	p_initialstate = *state;
 }

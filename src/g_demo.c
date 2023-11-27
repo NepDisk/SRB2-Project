@@ -1977,6 +1977,7 @@ void G_DoPlayDemo(char *defdemoname)
 	fixed_t camerascale,shieldscale,actionspd,mindash,maxdash,normalspeed,runspeed,jumpfactor,height,spinheight;
 	char msg[1024];
 
+	// For compiler warnings
 	randseed = 0;
 
 	skin[16] = '\0';
@@ -2264,8 +2265,11 @@ void G_DoPlayDemo(char *defdemoname)
 	playeringame[0] = true;
 	if (demoversion <= 0x0010)
 	{
+		if (randseed == 0)
+		{
+			I_Error("Old demo random seed not set. This should never happen.");
+		}
 		P_SetOldRandSeed(randseed);
-
 	}
 	else
 	{
@@ -2767,6 +2771,8 @@ static void G_StopDemoRecording(void)
 		else
 			CONS_Alert(CONS_WARNING, M_GetText("Demo %s not saved\n"), demoname);
 	}
+	// Refresh the seed and ensure we're in new RNG mode.
+	P_RandomInitialize();
 }
 
 // Stops metal sonic's demo. Separate from other functions because metal + replays can coexist
@@ -2871,6 +2877,8 @@ void G_StopDemo(void)
 
 	G_SetGamestate(GS_NULL);
 	wipegamestate = GS_NULL;
+	// Ensure the demo seed is cleared and that we're in new RNG mode.
+	P_RandomInitialize();
 	SV_StopServer();
 	SV_ResetServer();
 }
