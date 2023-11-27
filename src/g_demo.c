@@ -1977,6 +1977,8 @@ void G_DoPlayDemo(char *defdemoname)
 	fixed_t camerascale,shieldscale,actionspd,mindash,maxdash,normalspeed,runspeed,jumpfactor,height,spinheight;
 	char msg[1024];
 
+	randseed = 0;
+
 	skin[16] = '\0';
 	color[MAXCOLORNAME] = '\0';
 
