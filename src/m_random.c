@@ -162,6 +162,13 @@ static boolean RandomState_TrySeedFromOS(rnstate_t *state)
 	return true;
 }
 
+/** Initializes an SFC32 random state.
+ * It will first try to call TrySeedFromOS.
+ * If that fails, it will use the system time (using timespec if available)
+ * to seed the state.
+ * \param state A pointer to the state to initialize.
+*/
+
 // timespec is part of C11 and later, but Win32 appears not to support it...
 #if (__STDC_VERSION__ >= 201112L) && !defined(_WIN32)
 #define HAS_TIMESPEC
@@ -217,6 +224,14 @@ static inline fixed_t RandomState_GetFixed(rnstate_t *state)
 	return RandomState_Get32(state) >> (32-FRACBITS);
 }
 
+/** Provides a random integer in a given range.
+  * Distribution is uniform.
+  *
+  * \param state Pointer to the state to use.
+  * \param a Lower bound.
+  * \param b Upper bound.
+  * \return A random integer from [a,b].
+  */
 static inline INT32 RandomState_GetRange(rnstate_t *state, INT32 a, INT32 b)
 {
 	if (b < a)
@@ -232,6 +247,13 @@ static inline INT32 RandomState_GetRange(rnstate_t *state, INT32 a, INT32 b)
 	return (INT32)((INT64)RandomState_GetKeyU32(state, spread) + a);
 }
 
+/** Provides a random integer from [0,a) when a is positive.
+  * This function supports negative arguments to GetKey, which return
+  * an integer from (a, 0] in that case.
+  *
+  * \param a Number of items in array.
+  * \return A random integer from [0,a).
+  */
 static inline INT32 RandomState_GetKeyI32(rnstate_t *state, const INT32 a) {
 	boolean range_is_negative;
 	INT64 range;
@@ -256,7 +278,7 @@ static inline INT32 RandomState_GetKeyI32(rnstate_t *state, const INT32 a) {
 // RNG functions (not synched)
 // ---------------------------
 
-// The default seed is the hexadecimal digits of pi, though it will be overwritten.
+// The default seed is the hexadecimal digits of pi.
 static rnstate_t m_randomstate = {
 	.data = {0x4A3B6035U, 0x99555606U, 0x6F603421U},
 	.counter = 16
@@ -320,20 +342,21 @@ void M_RandomInitialize(void)
 // PRNG functions (synched)
 // ------------------------
 
+// The default seed is the hexadecimal Champernowne constant.
+#define DEFAULT_P_STATE { \
+	.data = {0x7B9B3D1AU, 0x6E678862U, 0x16D9DECEU}, \
+	.counter = 16 \
+}
+
 // Holds the current state.
-static rnstate_t p_randomstate = {
-	.data = {0x4A3B6035U, 0x99555606U, 0x6F603421U},
-	.counter = 16
-};
+static rnstate_t p_randomstate = DEFAULT_P_STATE;
 
 // Holds the INITIAL state value.  Used for demos, possibly also for debugging.
-static rnstate_t p_initialstate = {
-	.data = {0x4A3B6035U, 0x99555606U, 0x6F603421U},
-	.counter = 16
-};
+static rnstate_t p_initialstate = DEFAULT_P_STATE;
 
-// Backwards compatibility RNG for old demos.
-// Should be removed for 2.3.
+#undef DEFAULT_P_STATE
+
+// TODO: 2.3: Remove old RNG support.
 static boolean oldrng = false;
 static UINT32 old_randomseed = 0xBADE4404;
 
@@ -347,12 +370,21 @@ boolean P_UseOldRng(void)
 	return oldrng;
 }
 
+/** Set the seed for the old RNG.
+  * As a side effect, enables it.
+  */
 void P_SetOldRandSeed(UINT32 seed)
 {
 	if (!seed) seed = 0xBADE4404;
 	oldrng = true;
 	old_randomseed = seed;
 }
+
+/** Provides a random fixed point number using the old Xorshift* algorithm.
+  * Distribution is uniform.
+  *
+  * \return A random fixed point number from [0,1).
+  */
 
 static fixed_t __old_internal_prng__(void)
 {
@@ -361,7 +393,6 @@ static fixed_t __old_internal_prng__(void)
 	old_randomseed ^= old_randomseed << 21;
 	return ( (old_randomseed*36548569) >> 4) & (FRACUNIT-1);
 }
-
 
 /** Provides a random fixed point number. Distribution is uniform.
   *
@@ -385,7 +416,7 @@ fixed_t P_RandomFixedD(const char *rfile, INT32 rline)
   * as a fixed point multiplication by 256.
   *
   * \return Random integer from [0, 255].
-  * \sa __internal_prng__
+  * \sa __internal_prng__, RandomState_Get32
   */
 #ifndef DEBUGRANDOM
 UINT8 P_RandomByte(void)
@@ -443,6 +474,10 @@ INT32 P_RandomRangeD(const char *rfile, INT32 rline, INT32 a, INT32 b)
 	return RandomState_GetRange(&p_randomstate, a, b);
 }
 
+/** Initializes/reseeds the random state.
+  * Also disables the old RNG.
+  */
+
 #ifndef DEBUGRANDOM
 void P_RandomInitialize(void)
 {
@@ -463,7 +498,7 @@ UINT32 P_RandomInitializeD(const char *rfile, INT32 rline)
 /** Peeks to see what the next result from the PRNG will be.
   * Used for debugging.
   *
-  * \return A 'random' fixed point number from [0,1).
+  * \return An unsigned 32-bit integer
   */
 UINT32 P_RandomPeek(void)
 {
@@ -473,7 +508,6 @@ UINT32 P_RandomPeek(void)
 		fixed_t ret = __old_internal_prng__();
 		old_randomseed = r;
 		return ret;
-
 	}
 	return RandomState_Peek32(&p_randomstate);
 }
@@ -528,8 +562,9 @@ rnstate_t P_GetInitStateD(const char *rfile, INT32 rline)
 
 /** Sets the random state.
   * Used for demo playback and netgames.
+  * Also disables the old RNG.
   *
-  * \param rindex New random state.
+  * \param state A pointer to the random state to set.
   */
 #ifndef DEBUGRANDOM
 void P_SetRandState(const rnstate_t *state)

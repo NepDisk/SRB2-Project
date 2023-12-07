@@ -2169,7 +2169,7 @@ void G_DoPlayDemo(char *defdemoname)
 	}
 
 	// Random seed
-	if (demoversion <= 0x0010)
+	if (demorngmode != DRM_NEW)
 	{
 		randseed = READUINT32(demo_p);
 	}
@@ -2263,7 +2263,7 @@ void G_DoPlayDemo(char *defdemoname)
 	displayplayer = consoleplayer = 0;
 	memset(playeringame,0,sizeof(playeringame));
 	playeringame[0] = true;
-	if (demoversion <= 0x0010)
+	if (demorngmode != DRM_NEW)
 	{
 		if (randseed == 0)
 		{

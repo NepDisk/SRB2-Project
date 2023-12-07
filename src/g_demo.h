@@ -39,6 +39,7 @@ extern demo_file_override_e demofileoverride;
 extern boolean singledemo;
 extern boolean demo_start;
 
+// TODO: 2.3: OLD and OLD_FORWARDMOVE demos no longer need to be supported.
 typedef enum {
 	// The new SFC32 RNG.
 	DRM_NEW,
