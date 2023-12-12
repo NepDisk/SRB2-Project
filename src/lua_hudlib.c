@@ -1257,6 +1257,11 @@ static int libd_RandomRange(lua_State *L)
 	INT32 b = (INT32)luaL_checkinteger(L, 2);
 
 	HUDONLY
+	if (b < a) {
+		INT32 c = a;
+		a = b;
+		b = c;
+	}
 	lua_pushinteger(L, M_RandomRange(a, b));
 	return 1;
 }

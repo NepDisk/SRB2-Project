@@ -234,15 +234,6 @@ static inline fixed_t RandomState_GetFixed(rnstate_t *state)
   */
 static inline INT32 RandomState_GetRange(rnstate_t *state, INT32 a, INT32 b)
 {
-	if (b < a)
-	{
-		INT32 temp;
-
-		temp = a;
-		a = b;
-		b = temp;
-	}
-
 	const UINT32 spread = b-a+1;
 	return (INT32)((INT64)RandomState_GetKeyU32(state, spread) + a);
 }
