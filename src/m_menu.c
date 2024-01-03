@@ -12307,9 +12307,9 @@ static void M_DrawSetupMultiPlayerMenu(void)
 
 #define chary (y+64)
 
-	scale = FixedDiv(skins[setupm_fakeskin].highresscale, skins[setupm_fakeskin].shieldscale);
+	scale = FixedDiv(skins[setupm_fakeskin]->highresscale, skins[setupm_fakeskin]->shieldscale);
 	V_DrawFixedPatch(
-		(x<<FRACBITS) - ((skins[setupm_fakeskin].flags & SF_ODDCENTER) ? (scale/2) : 0),
+		(x<<FRACBITS) - ((skins[setupm_fakeskin]->flags & SF_ODDCENTER) ? (scale/2) : 0),
 		chary<<FRACBITS,
 		FixedDiv(skins[setupm_fakeskin]->highresscale, skins[setupm_fakeskin]->shieldscale),
 		flags, patch, colormap);
