@@ -109,10 +109,18 @@ FILE *fopenfile(const char*, const char*);
 
 // If you don't disable ALL debug first, you get ALL debug enabled
 #if !defined (NDEBUG)
+#ifndef PACKETDROP
 #define PACKETDROP
+#endif
+#ifndef PARANOIA
 #define PARANOIA
+#endif
+#ifndef RANGECHECK
 #define RANGECHECK
+#endif
+#ifndef ZDEBUG
 #define ZDEBUG
+#endif
 #endif
 
 // Uncheck this to compile debugging code
@@ -547,6 +555,7 @@ void M_UnGetToken(void);
 void M_TokenizerOpen(const char *inputString);
 void M_TokenizerClose(void);
 const char *M_TokenizerRead(UINT32 i);
+const char *M_TokenizerReadZDoom(UINT32 i);
 UINT32 M_TokenizerGetEndPos(void);
 void M_TokenizerSetEndPos(UINT32 newPos);
 char *sizeu1(size_t num);

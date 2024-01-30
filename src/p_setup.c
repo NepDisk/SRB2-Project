@@ -30,6 +30,7 @@
 #include "r_data.h"
 #include "r_things.h" // for R_AddSpriteDefs
 #include "r_textures.h"
+#include "r_translation.h"
 #include "r_patch.h"
 #include "r_picformats.h"
 #include "r_sky.h"
@@ -993,6 +994,9 @@ static void P_InitializeSector(sector_t *ss)
 	ss->lightingdata = NULL;
 	ss->fadecolormapdata = NULL;
 
+	ss->portal_floor = UINT32_MAX;
+	ss->portal_ceiling = UINT32_MAX;
+
 	ss->heightsec = -1;
 	ss->camsec = -1;
 
@@ -1110,6 +1114,7 @@ static void P_InitializeLinedef(line_t *ld)
 	ld->polyobj = NULL;
 
 	ld->callcount = 0;
+	ld->secportal = UINT32_MAX;
 
 	// cph 2006/09/30 - fix sidedef errors right away.
 	// cph 2002/07/20 - these errors are fatal if not fixed, so apply them
@@ -7883,6 +7888,7 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	P_InitThinkers();
 	R_InitMobjInterpolators();
 	P_InitCachedActions();
+	P_InitSectorPortals();
 
 	// internal game map
 	maplumpname = G_BuildMapName(gamemap);
@@ -7969,6 +7975,18 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	{
 		clientGamedata->mapvisited[gamemap-1] |= MV_VISITED;
 		serverGamedata->mapvisited[gamemap-1] |= MV_VISITED;
+
+		M_SilentUpdateUnlockablesAndEmblems(serverGamedata);
+
+		if (M_UpdateUnlockablesAndExtraEmblems(clientGamedata))
+		{
+			S_StartSound(NULL, sfx_s3k68);
+			G_SaveGameData(clientGamedata);
+		}
+		else if (!reloadinggamestate)
+		{
+			G_SaveGameData(clientGamedata);
+		}
 	}
 
 	levelloading = false;
@@ -8239,6 +8257,8 @@ static boolean P_LoadAddon(UINT16 numlumps)
 	if (rendermode == render_opengl && (vid.glstate == VID_GL_LIBRARY_LOADED))
 		HWR_ClearAllTextures();
 #endif
+
+	R_LoadParsedTranslations();
 
 	//
 	// search for sprite replacements
