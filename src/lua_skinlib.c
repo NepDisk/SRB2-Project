@@ -223,7 +223,7 @@ static int skin_get(lua_State *L)
 		LUA_PushUserdata(L, skin->sprites, META_SKINSPRITES);
 		break;
 	case skin_sprinfo:
-		LUA_PushUserdata(L, skin->sprites, META_SPRITEINFO);
+		LUA_PushUserdata(L, skin->sprinfo, META_SPRITEINFO);
 		break;
 	case skin_natkcolor:
 		lua_pushinteger(L, skin->natkcolor);
