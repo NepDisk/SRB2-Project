@@ -923,7 +923,7 @@ static void readspriteframe(MYFILE *f, spriteinfo_t *sprinfo, UINT8 frame)
 				sprinfo->pivot[frame].x = value;
 			else if (fastcmp(word, "YPIVOT"))
 				sprinfo->pivot[frame].y = value;
-			elseif (fastcmp(word, "XOFFSET"))
+			else if (fastcmp(word, "XOFFSET"))
 				sprinfo->offset[frame].x = value;
 			else if (fastcmp(word, "YOFFSET"))
 				sprinfo->offset[frame].y = value;
