@@ -12253,10 +12253,13 @@ static menucolor_t *M_GridIndexToMenuColor(UINT16 index)
 
 static void M_DrawSetupMultiPlayerMenu(void)
 {
-	INT32 x, y, cursory = 0, flags = 0;
+	INT32 x, y, cursory = 0, flags = 0, spr_offset = 0, spr_topoffset = 0;
 	INT32 scale = FRACUNIT;
 	spritedef_t *sprdef;
 	spriteframe_t *sprframe;
+#ifdef ROTSPRITE
+	spriteinfo_t *sprinfo;
+#endif
 	patch_t *patch;
 	UINT8 *colormap;
 
@@ -12332,15 +12335,23 @@ static void M_DrawSetupMultiPlayerMenu(void)
 	patch = W_CachePatchNum(sprframe->lumppat[0], PU_PATCH);
 	if (sprframe->flip & 1) // Only for first sprite
 		flags |= V_FLIP; // This sprite is left/right flipped!
+	
+#ifdef ROTSPRITE
+	sprinfo = &skins[setupm_fakeskin]->sprinfo[multi_spr2];
+	if (sprinfo->available)
+	{
+		spr_offset = sprinfo->offset[multi_frame].x;
+		spr_topoffset = sprinfo->offset[multi_frame].y;
+	}
+#endif
 
 #define chary (y+64)
 
 	scale = FixedDiv(skins[setupm_fakeskin]->highresscale, skins[setupm_fakeskin]->shieldscale);
 	V_DrawFixedPatch(
-		(x<<FRACBITS) - ((skins[setupm_fakeskin]->flags & SF_ODDCENTER) ? (scale/2) : 0),
-		chary<<FRACBITS,
-		FixedDiv(skins[setupm_fakeskin]->highresscale, skins[setupm_fakeskin]->shieldscale),
-		flags, patch, colormap);
+		(x<<FRACBITS) + FixedMul(spr_offset, scale),
+		(chary<<FRACBITS) + FixedMul(spr_topoffset, scale),
+		scale, flags, patch, colormap);
 
 	goto colordraw;
 

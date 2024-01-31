@@ -1407,6 +1407,8 @@ static void R_ParseSpriteInfoFrame(spriteinfo_t *info)
 	UINT8 frameFrame = 0xFF;
 	INT16 frameXPivot = 0;
 	INT16 frameYPivot = 0;
+	INT16 frameXOffset = 0;
+	INT16 frameYOffset = 0;
 
 	// Sprite identifier
 	sprinfoToken = M_GetToken(NULL);
@@ -1453,6 +1455,18 @@ static void R_ParseSpriteInfoFrame(spriteinfo_t *info)
 					sprinfoToken = M_GetToken(NULL);
 					frameYPivot = atoi(sprinfoToken);
 				}
+				else if (stricmp(sprinfoToken, "XOFFSET")==0)
+				{
+					Z_Free(sprinfoToken);
+					sprinfoToken = M_GetToken(NULL);
+					frameXOffset = atoi(sprinfoToken);
+				}
+				else if (stricmp(sprinfoToken, "YOFFSET")==0)
+				{
+					Z_Free(sprinfoToken);
+					sprinfoToken = M_GetToken(NULL);
+					frameYOffset = atoi(sprinfoToken);
+				}
 				else if (stricmp(sprinfoToken, "ROTAXIS")==0)
 				{
 					Z_Free(sprinfoToken);
@@ -1473,6 +1487,8 @@ static void R_ParseSpriteInfoFrame(spriteinfo_t *info)
 	// set fields
 	info->pivot[frameFrame].x = frameXPivot;
 	info->pivot[frameFrame].y = frameYPivot;
+	info->offset[frameFrame].x = frameXOffset;
+	info->offset[frameFrame].y = frameYOffset;
 }
 
 //

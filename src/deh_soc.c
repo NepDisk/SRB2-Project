@@ -923,6 +923,10 @@ static void readspriteframe(MYFILE *f, spriteinfo_t *sprinfo, UINT8 frame)
 				sprinfo->pivot[frame].x = value;
 			else if (fastcmp(word, "YPIVOT"))
 				sprinfo->pivot[frame].y = value;
+			elseif (fastcmp(word, "XOFFSET"))
+				sprinfo->offset[frame].x = value;
+			else if (fastcmp(word, "YOFFSET"))
+				sprinfo->offset[frame].y = value;
 			// TODO: 2.3: Delete
 			else if (fastcmp(word, "ROTAXIS"))
 				deh_warning("SpriteInfo: ROTAXIS is deprecated and will be removed.");

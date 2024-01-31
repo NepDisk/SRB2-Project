@@ -275,7 +275,7 @@ static int lib_getSpriteInfo(lua_State *L)
 #define FIELDERROR(f, e) luaL_error(L, "bad value for " LUA_QL(f) " in table passed to spriteinfo[] (%s)", e);
 #define TYPEERROR(f, t1, t2) FIELDERROR(f, va("%s expected, got %s", lua_typename(L, t1), lua_typename(L, t2)))
 
-static int PopPivotSubTable(spriteframepivot_t *pivot, lua_State *L, int stk, int idx)
+static int PopCoordSubTable(spriteframecoord_t *coord, lua_State *L, int stk, int idx)
 {
 	int okcool = 0;
 	switch (lua_type(L, stk))
@@ -297,7 +297,7 @@ static int PopPivotSubTable(spriteframepivot_t *pivot, lua_State *L, int stk, in
 						ikey = lua_tointeger(L, stk+1);
 						break;
 					default:
-						FIELDERROR("pivot key", va("string or number expected, got %s", luaL_typename(L, stk+1)))
+						FIELDERROR("coord key", va("string or number expected, got %s", luaL_typename(L, stk+1)))
 				}
 				// then get value
 				switch (lua_type(L, stk+2))
@@ -309,36 +309,36 @@ static int PopPivotSubTable(spriteframepivot_t *pivot, lua_State *L, int stk, in
 						value = (UINT8)lua_toboolean(L, stk+2);
 						break;
 					default:
-						TYPEERROR("pivot value", LUA_TNUMBER, lua_type(L, stk+2))
+						TYPEERROR("coord value", LUA_TNUMBER, lua_type(L, stk+2))
 				}
 				// finally set omg!!!!!!!!!!!!!!!!!!
 				if (ikey == 1 || (key && fastcmp(key, "x")))
-					pivot[idx].x = (INT32)value;
+					coord[idx].x = (INT32)value;
 				else if (ikey == 2 || (key && fastcmp(key, "y")))
-					pivot[idx].y = (INT32)value;
+					coord[idx].y = (INT32)value;
 				// TODO: 2.3: Delete
 				else if (ikey == 3 || (key && fastcmp(key, "rotaxis")))
 					LUA_UsageWarning(L, "\"rotaxis\" is deprecated and will be removed.")
 				else if (ikey == -1 && (key != NULL))
-					FIELDERROR("pivot key", va("invalid option %s", key));
+					FIELDERROR("coord key", va("invalid option %s", key));
 				okcool = 1;
 				lua_pop(L, 1);
 			}
 			break;
 		default:
-			TYPEERROR("sprite pivot", LUA_TTABLE, lua_type(L, stk))
+			TYPEERROR("sprite coord", LUA_TTABLE, lua_type(L, stk))
 	}
 	return okcool;
 }
 
-static int PopPivotTable(spriteinfo_t *info, lua_State *L, int stk)
+static int PopCoordTable(spriteinfo_t *info, lua_State *L, int stk, boolean pivot)
 {
 	// Just in case?
 	if (!lua_istable(L, stk))
-		TYPEERROR("pivot table", LUA_TTABLE, lua_type(L, stk));
+		TYPEERROR("coord table", LUA_TTABLE, lua_type(L, stk));
 
 	lua_pushnil(L);
-	// stk = 0 has the pivot table
+	// stk = 0 has the table
 	// stk = 1 has the frame key
 	// stk = 2 has the frame table
 	// stk = 3 has either a string or a number as key
@@ -357,12 +357,13 @@ static int PopPivotTable(spriteinfo_t *info, lua_State *L, int stk)
 				idx = lua_tonumber(L, stk+1);
 				break;
 			default:
-				TYPEERROR("pivot frame", LUA_TNUMBER, lua_type(L, stk+1));
+				TYPEERROR("coord frame", LUA_TNUMBER, lua_type(L, stk+1));
 		}
 		if ((idx < 0) || (idx >= 64))
-			return luaL_error(L, "pivot frame %d out of range (0 - %d)", idx, 63);
-		// the values in pivot[] are also tables
-		if (PopPivotSubTable(info->pivot, L, stk+2, idx))
+			return luaL_error(L, "coord frame %d out of range (0 - %d)", idx, 63);
+		// the values are also tables
+		if ((pivot && PopCoordSubTable(info->pivot, L, stk+2, idx))
+		|| (!pivot && PopCoordSubTable(info->offset, L, stk+2, idx)))
 			info->available = true;
 		lua_pop(L, 1);
 	}
@@ -405,9 +406,17 @@ static int lib_setSpriteInfo(lua_State *L)
 		{
 			// pivot[] is a table
 			if (lua_istable(L, 3))
-				return PopPivotTable(info, L, 3);
+				return PopCoordTable(info, L, 3, true);
 			else
 				FIELDERROR("pivot", va("%s expected, got %s", lua_typename(L, LUA_TTABLE), luaL_typename(L, -1)))
+		}
+		else if (i == 2 || (str && fastcmp(str, "offset")))
+		{
+			// offset[] is a table
+			if (lua_istable(L, 3))
+				return PopCoordTable(info, L, 3, false);
+			else
+				FIELDERROR("offset", va("%s expected, got %s", lua_typename(L, LUA_TTABLE), luaL_typename(L, -1)))
 		}
 
 		lua_pop(L, 1);
@@ -433,13 +442,24 @@ static int spriteinfo_get(lua_State *L)
 
 	I_Assert(sprinfo != NULL);
 
-	// push spriteframepivot_t userdata
+	// push spriteframecoord_t userdata
 	if (fastcmp(field, "pivot"))
 	{
 		// bypass LUA_PushUserdata
 		void **userdata = lua_newuserdata(L, sizeof(void *));
 		*userdata = &sprinfo->pivot;
-		luaL_getmetatable(L, META_PIVOTLIST);
+		luaL_getmetatable(L, META_COORDLIST);
+		lua_setmetatable(L, -2);
+
+		// stack is left with the userdata on top, as if getting it had originally succeeded.
+		return 1;
+	}
+	else if (fastcmp(field, "offset"))
+	{
+		// bypass LUA_PushUserdata
+		void **userdata = lua_newuserdata(L, sizeof(void *));
+		*userdata = &sprinfo->offset;
+		luaL_getmetatable(L, META_COORDLIST);
 		lua_setmetatable(L, -2);
 
 		// stack is left with the userdata on top, as if getting it had originally succeeded.
@@ -473,12 +493,25 @@ static int spriteinfo_set(lua_State *L)
 	{
 		// pivot[] is a table
 		if (lua_istable(L, 1))
-			return PopPivotTable(sprinfo, L, 1);
+			return PopCoordTable(sprinfo, L, 1, true);
 		// pivot[] is userdata
 		else if (lua_isuserdata(L, 1))
 		{
-			spriteframepivot_t *pivot = *((spriteframepivot_t **)luaL_checkudata(L, 1, META_PIVOTLIST));
-			memcpy(&sprinfo->pivot, pivot, sizeof(spriteframepivot_t));
+			spriteframecoord_t *pivot = *((spriteframecoord_t **)luaL_checkudata(L, 1, META_COORDLIST));
+			memcpy(&sprinfo->pivot, pivot, sizeof(spriteframecoord_t));
+			sprinfo->available = true; // Just in case?
+		}
+	}
+	else if (fastcmp(field, "offset"))
+	{
+		// offset[] is a table
+		if (lua_istable(L, 1))
+			return PopCoordTable(sprinfo, L, 1, false);
+		// offset[] is userdata
+		else if (lua_isuserdata(L, 1))
+		{
+			spriteframecoord_t *offset = *((spriteframecoord_t **)luaL_checkudata(L, 1, META_COORDLIST));
+			memcpy(&sprinfo->offset, offset, sizeof(spriteframecoord_t));
 			sprinfo->available = true; // Just in case?
 		}
 	}
@@ -499,11 +532,11 @@ static int spriteinfo_num(lua_State *L)
 	return 1;
 }
 
-// framepivot_t
-static int pivotlist_get(lua_State *L)
+// framecoord_t
+static int coordlist_get(lua_State *L)
 {
 	void **userdata;
-	spriteframepivot_t *framepivot = *((spriteframepivot_t **)luaL_checkudata(L, 1, META_PIVOTLIST));
+	spriteframecoord_t *framecoord = *((spriteframecoord_t **)luaL_checkudata(L, 1, META_COORDLIST));
 	const char *field = luaL_checkstring(L, 2);
 	UINT8 frame;
 
@@ -513,63 +546,63 @@ static int pivotlist_get(lua_State *L)
 
 	// bypass LUA_PushUserdata
 	userdata = lua_newuserdata(L, sizeof(void *));
-	*userdata = &framepivot[frame];
-	luaL_getmetatable(L, META_FRAMEPIVOT);
+	*userdata = &framecoord[frame];
+	luaL_getmetatable(L, META_FRAMECOORD);
 	lua_setmetatable(L, -2);
 
 	// stack is left with the userdata on top, as if getting it had originally succeeded.
 	return 1;
 }
 
-static int pivotlist_set(lua_State *L)
+static int coordlist_set(lua_State *L)
 {
-	// Because I already know it's a spriteframepivot_t anyway
-	spriteframepivot_t *pivotlist = *((spriteframepivot_t **)lua_touserdata(L, 1));
-	//spriteframepivot_t *framepivot = *((spriteframepivot_t **)luaL_checkudata(L, 1, META_FRAMEPIVOT));
+	// Because I already know it's a spriteframecoord_t anyway
+	spriteframecoord_t *coordlist = *((spriteframecoord_t **)lua_touserdata(L, 1));
+	//spriteframecoord_t *framecoord = *((spriteframecoord_t **)luaL_checkudata(L, 1, META_FRAMECOORD));
 	const char *field = luaL_checkstring(L, 2);
 	UINT8 frame;
 
 	if (!lua_lumploading)
-		return luaL_error(L, "Do not alter spriteframepivot_t from within a hook or coroutine!");
+		return luaL_error(L, "Do not alter spriteframecoord_t from within a hook or coroutine!");
 	if (hud_running)
-		return luaL_error(L, "Do not alter spriteframepivot_t in HUD rendering code!");
+		return luaL_error(L, "Do not alter spriteframecoord_t in HUD rendering code!");
 	if (hook_cmd_running)
-		return luaL_error(L, "Do not alter spriteframepivot_t in CMD building code!");
+		return luaL_error(L, "Do not alter spriteframecoord_t in CMD building code!");
 
 	frame = R_Char2Frame(field[0]);
 	if (frame == 255)
 		luaL_error(L, "invalid frame %s", field);
 
-	// pivot[] is a table
+	// variable is a table
 	if (lua_istable(L, 3))
-		return PopPivotSubTable(pivotlist, L, 3, frame);
-	// pivot[] is userdata
+		return PopCoordSubTable(coordlist, L, 3, frame);
+	// variable is userdata
 	else if (lua_isuserdata(L, 3))
 	{
-		spriteframepivot_t *copypivot = *((spriteframepivot_t **)luaL_checkudata(L, 3, META_FRAMEPIVOT));
-		memcpy(&pivotlist[frame], copypivot, sizeof(spriteframepivot_t));
+		spriteframecoord_t *copycoord = *((spriteframecoord_t **)luaL_checkudata(L, 3, META_FRAMECOORD));
+		memcpy(&coordlist[frame], copycoord, sizeof(spriteframecoord_t));
 	}
 
 	return 0;
 }
 
-static int pivotlist_num(lua_State *L)
+static int coordlist_num(lua_State *L)
 {
 	lua_pushinteger(L, 64);
 	return 1;
 }
 
-static int framepivot_get(lua_State *L)
+static int framecoord_get(lua_State *L)
 {
-	spriteframepivot_t *framepivot = *((spriteframepivot_t **)luaL_checkudata(L, 1, META_FRAMEPIVOT));
+	spriteframecoord_t *framecoord = *((spriteframecoord_t **)luaL_checkudata(L, 1, META_FRAMECOORD));
 	const char *field = luaL_checkstring(L, 2);
 
-	I_Assert(framepivot != NULL);
+	I_Assert(framecoord != NULL);
 
 	if (fastcmp("x", field))
-		lua_pushinteger(L, framepivot->x);
+		lua_pushinteger(L, framecoord->x);
 	else if (fastcmp("y", field))
-		lua_pushinteger(L, framepivot->y);
+		lua_pushinteger(L, framecoord->y);
 	// TODO: 2.3: Delete
 	else if (fastcmp("rotaxis", field))
 	{
@@ -577,39 +610,39 @@ static int framepivot_get(lua_State *L)
 		lua_pushinteger(L, 0);
 	}
 	else
-		return luaL_error(L, va("Field %s does not exist in spriteframepivot_t", field));
+		return luaL_error(L, va("Field %s does not exist in spriteframecoord_t", field));
 
 	return 1;
 }
 
-static int framepivot_set(lua_State *L)
+static int framecoord_set(lua_State *L)
 {
-	spriteframepivot_t *framepivot = *((spriteframepivot_t **)luaL_checkudata(L, 1, META_FRAMEPIVOT));
+	spriteframecoord_t *framecoord = *((spriteframecoord_t **)luaL_checkudata(L, 1, META_FRAMECOORD));
 	const char *field = luaL_checkstring(L, 2);
 
 	if (!lua_lumploading)
-		return luaL_error(L, "Do not alter spriteframepivot_t from within a hook or coroutine!");
+		return luaL_error(L, "Do not alter spriteframecoord_t from within a hook or coroutine!");
 	if (hud_running)
-		return luaL_error(L, "Do not alter spriteframepivot_t in HUD rendering code!");
+		return luaL_error(L, "Do not alter spriteframecoord_t in HUD rendering code!");
 	if (hook_cmd_running)
-		return luaL_error(L, "Do not alter spriteframepivot_t in CMD building code!");
+		return luaL_error(L, "Do not alter spriteframecoord_t in CMD building code!");
 
-	I_Assert(framepivot != NULL);
+	I_Assert(framecoord != NULL);
 
 	if (fastcmp("x", field))
-		framepivot->x = luaL_checkinteger(L, 3);
+		framecoord->x = luaL_checkinteger(L, 3);
 	else if (fastcmp("y", field))
-		framepivot->y = luaL_checkinteger(L, 3);
+		framecoord->y = luaL_checkinteger(L, 3);
 	// TODO: 2.3: delete
 	else if (fastcmp("rotaxis", field))
 		LUA_UsageWarning(L, "\"rotaxis\" is deprecated and will be removed.")
 	else
-		return luaL_error(L, va("Field %s does not exist in spriteframepivot_t", field));
+		return luaL_error(L, va("Field %s does not exist in spriteframecoord_t", field));
 
 	return 0;
 }
 
-static int framepivot_num(lua_State *L)
+static int framecoord_num(lua_State *L)
 {
 	lua_pushinteger(L, 2);
 	return 1;
@@ -1921,8 +1954,8 @@ int LUA_InfoLib(lua_State *L)
 	LUA_RegisterUserdataMetatable(L, META_COLORRAMP, colorramp_get, colorramp_set, colorramp_len);
 	LUA_RegisterUserdataMetatable(L, META_SFXINFO, sfxinfo_get, sfxinfo_set, sfxinfo_num);
 	LUA_RegisterUserdataMetatable(L, META_SPRITEINFO, spriteinfo_get, spriteinfo_set, spriteinfo_num);
-	LUA_RegisterUserdataMetatable(L, META_PIVOTLIST, pivotlist_get, pivotlist_set, pivotlist_num);
-	LUA_RegisterUserdataMetatable(L, META_FRAMEPIVOT, framepivot_get, framepivot_set, framepivot_num);
+	LUA_RegisterUserdataMetatable(L, META_COORDLIST, coordlist_get, coordlist_set, coordlist_num);
+	LUA_RegisterUserdataMetatable(L, META_FRAMECOORD, framecoord_get, framecoord_set, framecoord_num);
 	LUA_RegisterUserdataMetatable(L, META_LUABANKS, lib_getluabanks, lib_setluabanks, lib_luabankslen);
 
 	mobjinfo_fields_ref = Lua_CreateFieldTable(L, mobjinfo_opt);

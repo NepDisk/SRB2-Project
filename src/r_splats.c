@@ -151,6 +151,9 @@ void R_DrawFloorSplat(vissprite_t *spr)
 	UINT8 flipflags = 0;
 
 	renderflags_t renderflags = spr->renderflags;
+#ifdef ROTSPRITE
+	spriteinfo_t *sprinfo;
+#endif
 
 	if (hflip)
 		flipflags |= PICFLAGS_XFLIP;
@@ -186,11 +189,20 @@ void R_DrawFloorSplat(vissprite_t *spr)
 
 	topoffset = spr->spriteyoffset;
 	leftoffset = spr->spritexoffset;
-	if (mobj->skin && ((skin_t *)mobj->skin)->flags & SF_ODDCENTER
-	&& (mobj->sprite2 & ~FF_SPR2SUPER) != SPR2_SIGN
-	&& (mobj->sprite2 & ~FF_SPR2SUPER) != SPR2_LIFE
-	&& (mobj->sprite2 & ~FF_SPR2SUPER) != SPR2_XTRA)
-		leftoffset += FRACUNIT>>1; // offset by half a pixel, not for overlay sprite2s
+	
+#ifdef ROTSPRITE
+	// let spriteinfo offset by units less than a pixel
+	if (mobj->skin && mobj->sprite == SPR_PLAY)
+		sprinfo = &((skin_t *)mobj->skin)->sprinfo[mobj->sprite2];
+	else
+		sprinfo = &spriteinfo[mobj->sprite];
+	if (sprinfo->available)
+	{
+		spr_offset += sprinfo->offset[mobj->frame&FF_FRAMEMASK].x;
+		spr_topoffset += sprinfo->offset[mobj->frame&FF_FRAMEMASK].y;
+	}
+#endif
+
 	if (hflip)
 		leftoffset = ((splat.width * FRACUNIT) - leftoffset);
 

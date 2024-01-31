@@ -1819,11 +1819,15 @@ static void R_ProjectSprite(mobj_t *thing)
 		spr_offset += interp.spritexoffset * flipoffset;
 		spr_topoffset += interp.spriteyoffset * flipoffset;
 	}
-	if (thing->skin && ((skin_t *)thing->skin)->flags & SF_ODDCENTER
-	&& (thing->sprite2 & ~FF_SPR2SUPER) != SPR2_SIGN
-	&& (thing->sprite2 & ~FF_SPR2SUPER) != SPR2_LIFE
-	&& (thing->sprite2 & ~FF_SPR2SUPER) != SPR2_XTRA)
-		spr_offset += FRACUNIT>>1; // offset by half a pixel, not for overlay sprite2s
+	
+#ifdef ROTSPRITE
+	// let spriteinfo offset by units less than a pixel
+	if (sprinfo->available)
+	{
+		spr_offset += sprinfo->offset[thing->frame&FF_FRAMEMASK].x;
+		spr_topoffset += sprinfo->offset[thing->frame&FF_FRAMEMASK].y;
+	}
+#endif
 
 	if (flip)
 		offset = spr_offset - spr_width;
