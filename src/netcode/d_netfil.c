@@ -1610,11 +1610,13 @@ boolean CURLPrepareFile(const char* url, int dfilenum)
 		I_Error("Attempted to download files in -nodownload mode");
 #endif
 
-	curl_global_init(CURL_GLOBAL_ALL);
+	if (!multi_handle)
+	{
+		curl_global_init(CURL_GLOBAL_ALL);
+		multi_handle = curl_multi_init();
+	}
 
 	http_handle = curl_easy_init();
-	multi_handle = curl_multi_init();
-
 	if (http_handle && multi_handle)
 	{
 		I_mkdir(downloaddir, 0755);
@@ -1783,10 +1785,11 @@ void CURLGetFile(void)
 		}
 	}
 
-	if (!filedownload.remaining)
+	if (!filedownload.remaining || !filedownload.http_running)
 	{
 		curl_multi_cleanup(multi_handle);
 		curl_global_cleanup();
+		multi_handle = NULL;
 	}
 	filedownload.http_running = false;
 }
