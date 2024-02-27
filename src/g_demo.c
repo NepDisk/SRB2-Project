@@ -2199,8 +2199,8 @@ void G_DoPlayDemo(char *defdemoname)
 	else
 	{
 		for (i = 0; i < 3; i++)
-			randstate.data[i] = READUINT32(demo_p);
-		randstate.counter = READUINT32(demo_p);
+			randstate.data[i] = READINT32(demo_p);
+		randstate.counter = READINT32(demo_p);
 	}
 
 	// Player name
