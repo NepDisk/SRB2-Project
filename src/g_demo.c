@@ -2065,7 +2065,7 @@ void G_DoPlayDemo(char *defdemoname)
 	{
 		demorngmode = DRM_OLD_FORWARDMOVE;
 	}
-	else if (demoversion == 0x0010)
+	else if (demoversion <= 0x0012)
 	{
 		demorngmode = DRM_OLD;
 	}
