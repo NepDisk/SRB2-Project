@@ -24,7 +24,6 @@
 
 // SFC32 random number generator implementation
 
-
 /** Generate a raw uniform random number using a particular state.
   *
   * \param state The RNG state to use.
@@ -385,6 +384,14 @@ static fixed_t __old_internal_prng__(void)
 	return ( (old_randomseed*36548569) >> 4) & (FRACUNIT-1);
 }
 
+// Testing has shown that at least GCC needs a little help with this.
+#ifdef __GNUC__
+#define UNLIKELY(x) (__builtin_expect(!!(x), 0))
+#else
+#define UNLIKELY(x) (x)
+#endif
+
+
 /** Provides a random fixed point number. Distribution is uniform.
   *
   * \return A random fixed point number from [0,1).
@@ -397,7 +404,7 @@ fixed_t P_RandomFixedD(const char *rfile, INT32 rline)
 {
 	CONS_Printf("P_RandomFixed() at: %sp %d\n", rfile, rline);
 #endif
-	if (oldrng)
+	if (UNLIKELY(oldrng))
 		return __old_internal_prng__();
 	return RandomState_GetFixed(&p_randomstate);
 }
@@ -417,7 +424,7 @@ UINT8 P_RandomByteD(const char *rfile, INT32 rline)
 {
 	CONS_Printf("P_RandomByte() at: %sp %d\n", rfile, rline);
 #endif
-	if (oldrng)
+	if (UNLIKELY(oldrng))
 		return (UINT8)((__old_internal_prng__()&0xFF00)>>8);
 	return RandomState_Get32(&p_randomstate) >> 24;
 }
@@ -438,7 +445,7 @@ INT32 P_RandomKeyD(const char *rfile, INT32 rline, INT32 a)
 {
 	CONS_Printf("P_RandomKey() at: %sp %d\n", rfile, rline);
 #endif
-	if (oldrng)
+	if (UNLIKELY(oldrng))
 		return (INT32)(((INT64)__old_internal_prng__() * a) >> FRACBITS);
 	return RandomState_GetKeyI32(&p_randomstate, a);
 }
@@ -460,7 +467,7 @@ INT32 P_RandomRangeD(const char *rfile, INT32 rline, INT32 a, INT32 b)
 {
 	CONS_Printf("P_RandomRange() at: %sp %d\n", rfile, rline);
 #endif
-	if (oldrng)
+	if (UNLIKELY(oldrng))
 		return (INT32)(((INT64)__old_internal_prng__() * (b-a+1)) >> FRACBITS) + a;
 	return RandomState_GetRange(&p_randomstate, a, b);
 }
@@ -493,7 +500,7 @@ UINT32 P_RandomInitializeD(const char *rfile, INT32 rline)
   */
 UINT32 P_RandomPeek(void)
 {
-	if (oldrng)
+	if (UNLIKELY(oldrng))
 	{
 		UINT32 r = old_randomseed;
 		fixed_t ret = __old_internal_prng__();
@@ -511,7 +518,7 @@ UINT32 P_RandomPeek(void)
   */
 UINT32 P_GetRandDebugValue(void)
 {
-	if (oldrng)
+	if (UNLIKELY(oldrng))
 	{
 		return old_randomseed;
 	}
@@ -569,3 +576,5 @@ void P_SetRandStateD(const char *rfile, INT32 rline, const rnstate_t *state)
 	p_randomstate = *state;
 	p_initialstate = *state;
 }
+
+#undef UNLIKELY

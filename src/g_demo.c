@@ -2294,7 +2294,16 @@ void G_DoPlayDemo(char *defdemoname)
 	{
 		if (randseed == 0)
 		{
-			I_Error("Old demo random seed not set. This should never happen.");
+			// If 0 was the generated seed, the seed would have been overridden
+			// to 0xBADE4404. Therefore, a valid demo can never have this seed.
+			snprintf(msg, 1024, M_GetText("%s has an invalid random seed.\n"), pdemoname);
+			CONS_Alert(CONS_ERROR, "%s", msg);
+			M_StartMessage(msg, NULL, MM_NOTHING);
+			Z_Free(pdemoname);
+			Z_Free(demobuffer);
+			demoplayback = false;
+			titledemo = false;
+			return;
 		}
 		P_SetOldRandSeed(randseed);
 	}
