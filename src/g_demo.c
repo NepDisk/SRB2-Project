@@ -2272,6 +2272,23 @@ void G_DoPlayDemo(char *defdemoname)
 		return;
 	}
 
+	if (demorngmode != DRM_NEW)
+	{
+		if (randseed == 0)
+		{
+			// If 0 was the generated seed, the seed would have been overridden
+			// to 0xBADE4404. Therefore, a valid demo can never have this seed.
+			snprintf(msg, 1024, M_GetText("Demo %s has an invalid random seed.\n"), pdemoname);
+			CONS_Alert(CONS_ERROR, "%s", msg);
+			M_StartMessage(msg, NULL, MM_NOTHING);
+			Z_Free(pdemoname);
+			Z_Free(demobuffer);
+			demoplayback = false;
+			titledemo = false;
+			return;
+		}
+	}
+
 	Z_Free(pdemoname);
 
 	memset(&oldcmd,0,sizeof(oldcmd));
@@ -2292,19 +2309,6 @@ void G_DoPlayDemo(char *defdemoname)
 	playeringame[0] = true;
 	if (demorngmode != DRM_NEW)
 	{
-		if (randseed == 0)
-		{
-			// If 0 was the generated seed, the seed would have been overridden
-			// to 0xBADE4404. Therefore, a valid demo can never have this seed.
-			snprintf(msg, 1024, M_GetText("%s has an invalid random seed.\n"), pdemoname);
-			CONS_Alert(CONS_ERROR, "%s", msg);
-			M_StartMessage(msg, NULL, MM_NOTHING);
-			Z_Free(pdemoname);
-			Z_Free(demobuffer);
-			demoplayback = false;
-			titledemo = false;
-			return;
-		}
 		P_SetOldRandSeed(randseed);
 	}
 	else
