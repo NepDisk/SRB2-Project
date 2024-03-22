@@ -21,6 +21,7 @@
 #include "../byteptr.h"
 #include "../d_main.h"
 #include "../g_game.h"
+#include "../m_menu.h" // M_ClearMenus
 #include "../w_wad.h"
 #include "../z_zone.h"
 #include "../doomstat.h"
