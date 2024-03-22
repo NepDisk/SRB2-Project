@@ -399,10 +399,20 @@ void Command_connect(void)
 		return;
 	}
 
+	// StarManiaKG: allow us to join servers from where ever the heck we want //
 	if (Playing() || titledemo)
 	{
-		CONS_Printf(M_GetText("You cannot connect while in a game. End this game first.\n"));
-		return;
+		M_ClearMenus(true);
+		if (demoplayback && titledemo)
+			G_CheckDemoStatus();
+
+		if (netgame)
+		{
+			D_QuitNetGame();
+			CL_Reset();
+		}
+
+		D_StartTitle();
 	}
 
 	server = false;
