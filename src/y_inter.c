@@ -2163,6 +2163,11 @@ static void Y_AwardSpecialStageBonus(int denyaward)
 			Y_SetPerfectBonus(&players[i], &localbonuses[1]);
 		}
 
+		// grant extra lives right away since tally is faked
+		ptlives = min(
+			(INT32)((!ultimatemode && !modeattacking && players[i].lives != INFLIVES) ? max((INT32)((players[i].score / 50000) - (oldscore / 50000)), (INT32)0) : 0),
+			(INT32)(mapheaderinfo[prevmap]->maxbonuslives < 0 ? INT32_MAX : mapheaderinfo[prevmap]->maxbonuslives));
+
 		if (denyaward != 2)
 		{
 			players[i].score += localbonuses[0].points;
@@ -2173,12 +2178,6 @@ static void Y_AwardSpecialStageBonus(int denyaward)
 			players[i].recordscore += localbonuses[1].points;
 			if (players[i].recordscore > MAXSCORE)
 				players[i].recordscore = MAXSCORE;
-
-
-			// grant extra lives right away since tally is faked
-			ptlives = min(
-				(INT32)((!ultimatemode && !modeattacking && players[i].lives != INFLIVES) ? max((INT32)((players[i].score / 50000) - (oldscore / 50000)), (INT32)0) : 0),
-				(INT32)(mapheaderinfo[prevmap]->maxbonuslives < 0 ? INT32_MAX : mapheaderinfo[prevmap]->maxbonuslives));
 
 			P_GivePlayerLives(&players[i], ptlives);
 		}
