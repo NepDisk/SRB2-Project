@@ -1515,6 +1515,6 @@ void LUA_SetHudHook(int hook, huddrawlist_h list)
 			lua_pushinteger(gL, interlasttic);
 			lua_pushinteger(gL, interlasttallyendtic);
 			lua_pushinteger(gL, interlastendtic);
-
+			lua_pushinteger(gL, intertype);
 	}
 }

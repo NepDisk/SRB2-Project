@@ -17,6 +17,7 @@
 #include "r_skins.h"
 #include "b_bot.h"
 #include "z_zone.h"
+#include "y_inter.h"
 
 #include "lua_script.h"
 #include "lua_libs.h"
@@ -1068,6 +1069,7 @@ int LUA_HookIntermissionThinker(boolean pstagefailed, INT32 intertic, INT32 tall
 		lua_pushinteger(gL, intertic);
 		lua_pushinteger(gL, tallydonetic);
 		lua_pushinteger(gL, endtic);
+		lua_pushinteger(gL, intertype);
 		call_hooks(&hook, 1, res_force);
 	}
 	return hook.status;
