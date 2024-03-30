@@ -11,11 +11,14 @@
 
 extern boolean usebuffer;
 
+// externed for Lua hooks
+extern INT32 interlasttic, interlastendtic, interlasttallyendtic;
+
 void Y_IntermissionDrawer(void);
 void Y_Ticker(void);
 
 void Y_LoadIntermissionData(void);
-void Y_StartIntermission(void);
+void Y_StartIntermission(int denyaward);
 void Y_EndIntermission(void);
 
 void Y_ConsiderScreenBuffer(void);

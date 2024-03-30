@@ -1512,5 +1512,9 @@ void LUA_SetHudHook(int hook, huddrawlist_h list)
 
 		case HUD_HOOK(intermission):
 			lua_pushboolean(gL, stagefailed);
+			lua_pushinteger(gL, interlasttic);
+			lua_pushinteger(gL, interlasttallyendtic);
+			lua_pushinteger(gL, interlastendtic);
+
 	}
 }

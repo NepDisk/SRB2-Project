@@ -62,6 +62,7 @@ automatically.
 	X (ShieldSpecial),/* shield abilities */\
 	X (PlayerCanDamage),/* P_PlayerCanDamage */\
 	X (PlayerQuit),\
+	X (MapFinish),/* G_DoCompleted */\
 	X (IntermissionThinker),/* Y_Ticker */\
 	X (TeamSwitch),/* team switching in... uh... *what* speak, spit it the fuck out */\
 	X (ViewpointSwitch),/* spy mode (no trickstabs) */\
@@ -119,7 +120,8 @@ extern boolean hook_cmd_running;
 
 void LUA_HookVoid(int hook);
 void LUA_HookHUD(int hook, huddrawlist_h drawlist);
-int LUA_HookCharacterHUD
+int  LUA_HookIntermissionThinker(boolean pstagefailed, INT32 intertic, INT32 tallydonetic, INT32 endtic);
+int  LUA_HookCharacterHUD
 (
 	int hook, huddrawlist_h drawlist, player_t *player,
 	fixed_t x, fixed_t y, fixed_t scale,
@@ -158,5 +160,6 @@ int  LUA_HookSeenPlayer(player_t *player, player_t *seenfriend);
 int  LUA_HookShouldJingleContinue(player_t *, const char *musname);
 int  LUA_HookPlayerCmd(player_t *, ticcmd_t *);
 int  LUA_HookMusicChange(const char *oldname, struct MusicChange *);
+int  LUA_HookMapFinish(UINT8 pskipstats, INT16 currentmap, INT16 pnextmap);
 fixed_t LUA_HookPlayerHeight(player_t *player);
 int  LUA_HookPlayerCanEnterSpinGaps(player_t *player);

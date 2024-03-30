@@ -4140,7 +4140,23 @@ INT16 G_GetNextMap(boolean ignoretokens, boolean silent)
 static void G_DoCompleted(void)
 {
 	INT32 i;
-	
+
+	INT16 prevmapinit = (INT16)(gamemap - 1);
+
+	// NOTE: G_GetNextMap is used twice with the expectation that the lua modder would use G_SetCustomExitVars function within the hook
+
+	//if 0, vanilla behavior. if 1 (true) stops game from executing G_DoCompleted. if 2 (false), stops tally from rewarding players
+	int finishhook = LUA_HookMapFinish(skipstats, prevmapinit, G_GetNextMap(false, true));
+
+	if (finishhook == 1) {
+		gameaction = ga_nothing;
+		return;
+	}
+
+	//Get and set prevmap/nextmap
+	prevmap = prevmapinit;
+	nextmap = G_GetNextMap(false, false);
+
 	tokenlist = 0; // Reset the list
 
 	if (modeattacking && pausedelay)
@@ -4164,10 +4180,6 @@ static void G_DoCompleted(void)
 		AM_Stop();
 
 	S_StopSounds();
-
-	//Get and set prevmap/nextmap
-	prevmap = (INT16)(gamemap-1);
-	nextmap = G_GetNextMap(false, false);
 	
 	automapactive = false;
 
@@ -4187,7 +4199,7 @@ static void G_DoCompleted(void)
 	else
 	{
 		G_SetGamestate(GS_INTERMISSION);
-		Y_StartIntermission();
+		Y_StartIntermission(finishhook);
 		Y_LoadIntermissionData();
 		G_HandleSaveLevel();
 	}

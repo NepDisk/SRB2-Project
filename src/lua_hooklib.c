@@ -1059,6 +1059,33 @@ void LUA_HookPlayerQuit(player_t *plr, kickreason_t reason)
 	}
 }
 
+int LUA_HookIntermissionThinker(boolean pstagefailed, INT32 intertic, INT32 tallydonetic, INT32 endtic)
+{
+	Hook_State hook;
+	if (prepare_hook(&hook, 0, HOOK(IntermissionThinker)))
+	{
+		lua_pushboolean(gL, pstagefailed);
+		lua_pushinteger(gL, intertic);
+		lua_pushinteger(gL, tallydonetic);
+		lua_pushinteger(gL, endtic);
+		call_hooks(&hook, 1, res_force);
+	}
+	return hook.status;
+}
+
+int LUA_HookMapFinish(UINT8 pskipstats, INT16 currentmap, INT16 pnextmap)
+{
+	Hook_State hook;
+	if (prepare_hook(&hook, 0, HOOK(MapFinish)))
+	{
+		lua_pushinteger(gL, pskipstats);
+		lua_pushinteger(gL, currentmap + 1);
+		lua_pushinteger(gL, pnextmap + 1);
+		call_hooks(&hook, 1, res_force);
+	}
+	return hook.status;
+}
+
 int LUA_HookTeamSwitch(player_t *player, int newteam, boolean fromspectators, boolean tryingautobalance, boolean tryingscramble)
 {
 	Hook_State hook;

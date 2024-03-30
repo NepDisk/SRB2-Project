@@ -163,14 +163,18 @@ static INT32 intertic;
 static INT32 tallydonetic = -1;
 static INT32 endtic = -1;
 
+INT32 interlasttic = 0;
+INT32 interlastendtic = 0;
+INT32 interlasttallyendtic = 0;
+
 intertype_t intertype = int_none;
 intertype_t intermissiontypes[NUMGAMETYPES];
 
 static huddrawlist_h luahuddrawlist_intermission;
 
 static void Y_RescaleScreenBuffer(void);
-static void Y_AwardCoopBonuses(void);
-static void Y_AwardSpecialStageBonus(void);
+static void Y_AwardCoopBonuses(int denyaward);
+static void Y_AwardSpecialStageBonus(int denyaward);
 static void Y_CalculateCompetitionWinners(void);
 static void Y_CalculateTimeRaceWinners(void);
 static void Y_CalculateMatchWinners(void);
@@ -998,9 +1002,19 @@ void Y_Ticker(void)
 	if (paused || P_AutoPause())
 		return;
 
-	LUA_HookBool(stagefailed, HOOK(IntermissionThinker));
+
+	// Saving last tics for lua drawer use, without refactoring static timer variable
+	// if 0 default behavior, if 2 (false) pause, if 1 (true) ends intermission
+	// We could use the hud hook, but that's the thing, it is visual hook meant for visuals, even if it is thinker.
+	int intermissionhook = LUA_HookIntermissionThinker(stagefailed, intertic, tallydonetic, endtic);
+
+	// Pauses tally logic for custom tally screens with their own calculations.
+	if (intermissionhook == 2)
+		return;
 
 	intertic++;
+	interlasttic = intertic;
+	// Saving last tics for lua drawer use, without refactoring static timer variable
 
 	// Team scramble code for team match and CTF.
 	// Don't do this if we're going to automatically scramble teams next round.
@@ -1012,8 +1026,22 @@ void Y_Ticker(void)
 			P_DoTeamscrambling();
 	}
 
-	// multiplayer uses timer (based on cv_inttime)
-	if (timer)
+
+	// Regardless of multiplayer/singleplayer, Lua gets priority to end tally
+	if (intermissionhook == 1)
+	{
+		if (!demoplayback && (intertype == int_coop || intertype == int_spec))
+		{
+			M_SilentUpdateUnlockablesAndEmblems(serverGamedata);
+			M_UpdateUnlockablesAndExtraEmblems(clientGamedata);
+			G_SaveGameData(clientGamedata);
+		}
+
+		Y_EndIntermission();
+		G_AfterIntermission();
+		return;
+	}
+	else if (timer) // multiplayer uses timer (based on cv_inttime)
 	{
 		if (!--timer)
 		{
@@ -1265,6 +1293,10 @@ void Y_Ticker(void)
 
 		// Don't bother recalcing for race. It doesn't make as much sense.
 	}
+
+	// Mirrors last recorded numbers for lua hook.
+	interlasttallyendtic = tallydonetic;
+	interlastendtic = endtic;
 }
 
 //
@@ -1301,7 +1333,7 @@ void Y_DetermineIntermissionType(void)
 // Called by G_DoCompleted. Sets up data for intermission drawer/ticker.
 //
 //
-void Y_StartIntermission(void)
+void Y_StartIntermission(int denyaward)
 {
 	intertic = -1;
 
@@ -1341,7 +1373,7 @@ void Y_StartIntermission(void)
 		case int_coop: // coop or single player, normal level
 		{
 			// award time and ring bonuses
-			Y_AwardCoopBonuses();
+			Y_AwardCoopBonuses(denyaward);
 
 			// setup time data
 			data.coop.tics = players[consoleplayer].realtime;
@@ -1429,7 +1461,7 @@ void Y_StartIntermission(void)
 		case int_spec: // coop or single player, special stage
 		{
 			// give out ring bonuses
-			Y_AwardSpecialStageBonus();
+			Y_AwardSpecialStageBonus(denyaward);
 
 			// grab an interscreen if appropriate
 			if (mapheaderinfo[gamemap-1]->interscreen[0] != '#')
@@ -2037,7 +2069,7 @@ bonus_f bonuses_list[6][4] = {
 //
 // Awards the time and ring bonuses.
 //
-static void Y_AwardCoopBonuses(void)
+static void Y_AwardCoopBonuses(int denyaward)
 {
 	INT32 i, j, bonusnum, oldscore, ptlives;
 	y_bonus_t localbonuses[4];
@@ -2061,23 +2093,29 @@ static void Y_AwardCoopBonuses(void)
 		for (j = 0; j < 4; ++j) // Set bonuses
 		{
 			//Set the bonus, but only if we actually finished
-			if (players[i].pflags & PF_FINISHED)
+
+			if (players[i].pflags & PF_FINISHED && denyaward != 2)
 				(bonuses_list[bonusnum][j])(&players[i], &localbonuses[j]);
 			else
 				Y_SetNullBonus(&players[i], &localbonuses[j]);
 			
-			players[i].score += localbonuses[j].points;
-			if (players[i].score > MAXSCORE)
-				players[i].score = MAXSCORE;
-			players[i].recordscore += localbonuses[j].points;
-			if (players[i].recordscore > MAXSCORE)
-				players[i].recordscore = MAXSCORE;
+
+			if (denyaward != 2)
+			{
+				players[i].score += localbonuses[j].points;
+				if (players[i].score > MAXSCORE)
+					players[i].score = MAXSCORE;
+				players[i].recordscore += localbonuses[j].points;
+				if (players[i].recordscore > MAXSCORE)
+					players[i].recordscore = MAXSCORE;
+			}
+
 		}
 
 		ptlives = min(
 			(INT32)((!ultimatemode && !modeattacking && players[i].lives != INFLIVES) ? max((INT32)((players[i].score/50000) - (oldscore/50000)), (INT32)0) : 0),
 			(INT32)(mapheaderinfo[prevmap]->maxbonuslives < 0 ? INT32_MAX : mapheaderinfo[prevmap]->maxbonuslives));
-		if (ptlives)
+		if (ptlives && denyaward != 2)
 			P_GivePlayerLives(&players[i], ptlives);
 
 		if (i == consoleplayer)
@@ -2096,7 +2134,7 @@ static void Y_AwardCoopBonuses(void)
 // Y_AwardSpecialStageBonus
 //
 // Gives a ring bonus only.
-static void Y_AwardSpecialStageBonus(void)
+static void Y_AwardSpecialStageBonus(int denyaward)
 {
 	INT32 i, oldscore, ptlives;
 	y_bonus_t localbonuses[2];
@@ -2124,20 +2162,26 @@ static void Y_AwardSpecialStageBonus(void)
 			Y_SetSpecialRingBonus(&players[i], &localbonuses[0]);
 			Y_SetPerfectBonus(&players[i], &localbonuses[1]);
 		}
-		players[i].score += localbonuses[0].points;
-		players[i].score += localbonuses[1].points;
-		if (players[i].score > MAXSCORE)
-			players[i].score = MAXSCORE;
-		players[i].recordscore += localbonuses[0].points;
-		players[i].recordscore += localbonuses[1].points;
-		if (players[i].recordscore > MAXSCORE)
-			players[i].recordscore = MAXSCORE;
 
-		// grant extra lives right away since tally is faked
-		ptlives = min(
-			(INT32)((!ultimatemode && !modeattacking && players[i].lives != INFLIVES) ? max((INT32)((players[i].score/50000) - (oldscore/50000)), (INT32)0) : 0),
-			(INT32)(mapheaderinfo[prevmap]->maxbonuslives < 0 ? INT32_MAX : mapheaderinfo[prevmap]->maxbonuslives));
-		P_GivePlayerLives(&players[i], ptlives);
+		if (denyaward != 2)
+		{
+			players[i].score += localbonuses[0].points;
+			players[i].score += localbonuses[1].points;
+			if (players[i].score > MAXSCORE)
+				players[i].score = MAXSCORE;
+			players[i].recordscore += localbonuses[0].points;
+			players[i].recordscore += localbonuses[1].points;
+			if (players[i].recordscore > MAXSCORE)
+				players[i].recordscore = MAXSCORE;
+
+
+			// grant extra lives right away since tally is faked
+			ptlives = min(
+				(INT32)((!ultimatemode && !modeattacking && players[i].lives != INFLIVES) ? max((INT32)((players[i].score / 50000) - (oldscore / 50000)), (INT32)0) : 0),
+				(INT32)(mapheaderinfo[prevmap]->maxbonuslives < 0 ? INT32_MAX : mapheaderinfo[prevmap]->maxbonuslives));
+
+			P_GivePlayerLives(&players[i], ptlives);
+		}
 
 		if (i == consoleplayer)
 		{
