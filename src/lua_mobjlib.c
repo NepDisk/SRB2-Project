@@ -1001,9 +1001,6 @@ static int mapthing_get(lua_State *L)
 		return 0;
 	}
 
-	if (field == (enum mapthing_e)-1)
-		return LUA_ErrInvalid(L, "fields");
-
 	switch (field)
 	{
 		case mapthing_valid:
@@ -1061,10 +1058,13 @@ static int mapthing_get(lua_State *L)
 			LUA_PushUserdata(L, mt->mobj, META_MOBJ);
 			break;
 		default:
-			if (devparm)
-				return luaL_error(L, "%s %s", LUA_QL("mapthing_t"), va("has no field named: %ui", field));
-			else
-				return 0;
+			lua_pushlightuserdata(L, mt);
+			lua_getfield(L, LUA_REGISTRYINDEX, LREG_EXTVARS);
+			lua_pushvalue(L, 2); // field value
+			lua_pushvalue(L, 3); // value
+			if (lua_isnil(L, -1)) // no value for this field
+				CONS_Debug(DBG_LUA, M_GetText("'%s' has no field named '%s'; returning nil.\n"), "mapthing_t", lua_tostring(L, 2));
+			break;
 	}
 
 	return 1;

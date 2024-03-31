@@ -63,6 +63,7 @@
 
 #include "filesrch.h" // refreshdirmenu
 
+#include "lua_libs.h"
 #include "lua_hud.h" // level title
 
 #include "f_finale.h" // wipes
@@ -2039,7 +2040,7 @@ static void ParseTextmapLinedefParameter(UINT32 i, const char *param, const char
 		lines[i].flags |= ML_TFERLINE;
 }
 
-static void ParseTextmapThingParameter(UINT32 i, const char *param, const char *val)
+static void ParseTextmapThingParameter(UINT32 i, const char* param, const char* val)
 {
 	if (fastcmp(param, "id"))
 		Tag_FSet(&mapthings[i].tags, atol(val));
@@ -2095,6 +2096,13 @@ static void ParseTextmapThingParameter(UINT32 i, const char *param, const char *
 		if (argnum >= NUMMAPTHINGARGS)
 			return;
 		mapthings[i].args[argnum] = atol(val);
+	}
+	else if (param[0] != '\0' && val[0] != '\0')
+	{
+		lua_getfield(gL, LUA_REGISTRYINDEX, LREG_EXTVARS);
+		lua_pushstring(gL, param); // key
+		lua_pushstring(gL, val); // value to store
+		lua_pop(gL, 2);
 	}
 }
 
@@ -3097,7 +3105,10 @@ static void P_LoadTextmap(void)
 		memset(mt->stringargs, 0x00, NUMMAPTHINGSTRINGARGS*sizeof(*mt->stringargs));
 		mt->mobj = NULL;
 
+		lua_pushlightuserdata(gL, mt);
+
 		TextmapParse(mapthingsPos[i], i, ParseTextmapThingParameter);
+		lua_pop(gL, 1);
 	}
 }
 
