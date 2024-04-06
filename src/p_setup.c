@@ -2040,6 +2040,8 @@ static void ParseTextmapLinedefParameter(UINT32 i, const char *param, const char
 		lines[i].flags |= ML_TFERLINE;
 }
 
+boolean newudmffields = false;
+
 static void ParseTextmapThingParameter(UINT32 i, const char* param, const char* val)
 {
 	if (fastcmp(param, "id"))
@@ -2097,12 +2099,71 @@ static void ParseTextmapThingParameter(UINT32 i, const char* param, const char* 
 			return;
 		mapthings[i].args[argnum] = atol(val);
 	}
-	else if (param[0] != '\0' && val[0] != '\0')
+	else if (gL && fastncmp(param, "user_", 5) && strlen(param) > 6) // the 6 is used to force modders to write just 'user_'
 	{
-		lua_getfield(gL, LUA_REGISTRYINDEX, LREG_EXTVARS);
-		lua_pushstring(gL, param); // key
-		lua_pushstring(gL, val); // value to store
-		lua_pop(gL, 2);
+		if (!newudmffields)
+		{
+			lua_getfield(gL, LUA_REGISTRYINDEX, LREG_EXTVARS);
+			lua_newtable(gL);
+			lua_pushlightuserdata(gL, &mapthings[i]);
+			lua_pushvalue(gL, -2); // ext value table
+			lua_rawset(gL, -4); // LREG_EXTVARS table
+
+			lua_newtable(gL); // customargs table, gets closed in P_LoadTextMap function
+			newudmffields = true;
+		}
+
+
+		if (fastcmp(val, "true"))
+		{
+			lua_pushboolean(gL, true);
+			lua_setfield(gL, -2, param + 5);
+		}
+		else if (fastcmp(val, "false"))
+		{
+			lua_pushboolean(gL, false);
+			lua_setfield(gL, -2, param + 5);
+		}
+		else
+		{
+			size_t len = strlen(val);
+			size_t index = 0;
+			INT8 isnum = 2;
+
+
+			for (; index < len-1; ++index)
+			{
+				char pick = val[index];
+
+				if (isnum == 2 && pick == '.') // Is it float?
+				{
+					isnum = 1;
+					continue;
+				}
+
+				if (!isdigit(pick)) // Is it string?
+				{
+					isnum = 0;
+					break;
+				}
+
+			}
+
+			switch (isnum)
+			{
+				case 2: // push integer
+					lua_pushinteger(gL, atol(val));
+					break;
+				case 1: // push float as fixed point value
+					lua_pushfixed(gL, FLOAT_TO_FIXED(atof(val)));
+					break;
+				default: // push string
+					lua_pushstring(gL, val);	
+			}
+			lua_setfield(gL, -2, param + 5);
+		}
+
+
 	}
 }
 
@@ -3105,10 +3166,14 @@ static void P_LoadTextmap(void)
 		memset(mt->stringargs, 0x00, NUMMAPTHINGSTRINGARGS*sizeof(*mt->stringargs));
 		mt->mobj = NULL;
 
-		lua_pushlightuserdata(gL, mt);
-
 		TextmapParse(mapthingsPos[i], i, ParseTextmapThingParameter);
-		lua_pop(gL, 1);
+		if (newudmffields)
+		{
+			lua_setfield(gL, -2, "customargs");
+			lua_settop(gL, 0);
+
+			newudmffields = false;
+		}
 	}
 }
 

@@ -958,6 +958,7 @@ enum mapthing_e {
 	mapthing_taglist,
 	mapthing_args,
 	mapthing_stringargs,
+	mapthing_customargs,
 	mapthing_mobj,
 };
 
@@ -979,6 +980,7 @@ const char *const mapthing_opt[] = {
 	"taglist",
 	"args",
 	"stringargs",
+	"customargs",
 	"mobj",
 	NULL,
 };
@@ -1000,6 +1002,9 @@ static int mapthing_get(lua_State *L)
 			return luaL_error(L, "accessed mapthing_t doesn't exist anymore.");
 		return 0;
 	}
+
+	if (field == (enum mapthing_e)-1)
+		return LUA_ErrInvalid(L, "fields");
 
 	switch (field)
 	{
@@ -1054,17 +1059,28 @@ static int mapthing_get(lua_State *L)
 		case mapthing_stringargs:
 			LUA_PushUserdata(L, mt->stringargs, META_THINGSTRINGARGS);
 			break;
+		case mapthing_customargs:
+			lua_getfield(L, LUA_REGISTRYINDEX, LREG_EXTVARS);
+			I_Assert(lua_istable(L, -1));
+			lua_pushlightuserdata(L, mt);
+			lua_rawget(L, -2);
+			if (!lua_istable(L, -1)) { // no extra values table
+				CONS_Debug(DBG_LUA, M_GetText("'%s' has no extvars table; returning nil.\n"), "mapthing_t");
+				return 0;
+			}
+			lua_pushvalue(L, 2); // field name
+			lua_gettable(L, -2);
+			if (lua_isnil(L, -1)) // no value for this field
+				CONS_Debug(DBG_LUA, M_GetText("'%s' ha; returning nil.\n"), "mapthing_t");
+			break;
 		case mapthing_mobj:
 			LUA_PushUserdata(L, mt->mobj, META_MOBJ);
 			break;
 		default:
-			lua_pushlightuserdata(L, mt);
-			lua_getfield(L, LUA_REGISTRYINDEX, LREG_EXTVARS);
-			lua_pushvalue(L, 2); // field value
-			lua_pushvalue(L, 3); // value
-			if (lua_isnil(L, -1)) // no value for this field
-				CONS_Debug(DBG_LUA, M_GetText("'%s' has no field named '%s'; returning nil.\n"), "mapthing_t", lua_tostring(L, 2));
-			break;
+			if (devparm)
+				return luaL_error(L, "%s %s", LUA_QL("mapthing_t"), va("has no field named: %ui", field));
+			else
+				return 0;
 	}
 
 	return 1;
