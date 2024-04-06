@@ -2128,28 +2128,30 @@ static void ParseTextmapThingParameter(UINT32 i, const char* param, const char* 
 		{
 			size_t len = strlen(val);
 			size_t index = 0;
-			INT8 isnum = 2;
+			int datatypevalue = 2;
 
 
 			for (; index < len-1; ++index)
 			{
 				char pick = val[index];
 
-				if (isnum == 2 && pick == '.') // Is it float?
+				if (datatypevalue == 2 && pick == '.') // Is it float?
 				{
-					isnum = 1;
+					datatypevalue = 1;
 					continue;
 				}
 
 				if (!isdigit(pick)) // Is it string?
 				{
-					isnum = 0;
+					datatypevalue = 0;
 					break;
 				}
 
+
+				// Otherwise it is interger
 			}
 
-			switch (isnum)
+			switch (datatypevalue)
 			{
 				case 2: // push integer
 					lua_pushinteger(gL, atol(val));
