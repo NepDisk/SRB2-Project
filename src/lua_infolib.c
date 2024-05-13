@@ -1163,6 +1163,7 @@ enum mobjinfo_e
 	mobjinfo_activesound,
 	mobjinfo_flags,
 	mobjinfo_raisestate,
+	mobjinfo_string,
 };
 
 const char *const mobjinfo_opt[] = {
@@ -1190,6 +1191,7 @@ const char *const mobjinfo_opt[] = {
 	"activesound",
 	"flags",
 	"raisestate",
+	"string",
 	NULL,
 };
 
@@ -1278,6 +1280,22 @@ static int mobjinfo_get(lua_State *L)
 	case mobjinfo_raisestate:
 		lua_pushinteger(L, info->raisestate);
 		break;
+	case mobjinfo_string:
+		mobjtype_t id = info-mobjinfo;
+		if (id < MT_FIRSTFREESLOT)
+		{
+			lua_pushstring(L, MOBJTYPE_LIST[id]+3);
+			return 1;
+		}
+
+		id -= MT_FIRSTFREESLOT;
+		if (id < NUMMOBJFREESLOTS && FREE_MOBJS[id])
+		{
+			lua_pushstring(L, FREE_MOBJS[id]);
+			return 1;
+		}
+
+		return 0;
 	default:
 		lua_getfield(L, LUA_REGISTRYINDEX, LREG_EXTVARS);
 		I_Assert(lua_istable(L, -1));
