@@ -355,8 +355,9 @@ static int PopCoordTable(spriteinfo_t *info, lua_State *L, int stk, boolean pivo
 		if ((idx < 0) || (idx >= MAXFRAMENUM))
 			return luaL_error(L, "coord frame %d out of range (0 - %d)", idx, MAXFRAMENUM - 1);
 		// the values are also tables
-		if ((pivot && PopCoordSubTable(info->pivot, L, stk+2, idx))
-		|| (!pivot && PopCoordSubTable(info->offset, L, stk+2, idx)))
+		if (!pivot)
+			PopCoordSubTable(info->offset, L, stk+2, idx);
+		else if (pivot && PopCoordSubTable(info->pivot, L, stk+2, idx))
 			info->available = true;
 		lua_pop(L, 1);
 	}
@@ -505,7 +506,6 @@ static int spriteinfo_set(lua_State *L)
 		{
 			spriteframecoord_t *offset = *((spriteframecoord_t **)luaL_checkudata(L, 1, META_COORDLIST));
 			memcpy(&sprinfo->offset, offset, sizeof(spriteframecoord_t));
-			sprinfo->available = true; // Just in case?
 		}
 	}
 	else

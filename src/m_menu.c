@@ -12289,11 +12289,8 @@ static void M_DrawSetupMultiPlayerMenu(void)
 	
 #ifdef ROTSPRITE
 	sprinfo = &skins[setupm_fakeskin]->sprinfo[multi_spr2];
-	if (sprinfo->available)
-	{
-		spr_offset = sprinfo->offset[multi_frame].x;
-		spr_topoffset = sprinfo->offset[multi_frame].y;
-	}
+	spr_offset = sprinfo->offset[multi_frame].x;
+	spr_topoffset = sprinfo->offset[multi_frame].y;
 #endif
 
 	M_DrawPlayerSetupFollowItem(x, chary, scale, flags & ~V_FLIP);

@@ -4501,11 +4501,8 @@ static void HWR_ProjectSprite(mobj_t *thing)
 	
 #ifdef ROTSPRITE
 	// let spriteinfo offset by units less than a pixel
-	if (sprinfo->available)
-	{
-		spr_offset += (fixed_t)sprinfo->offset[thing->frame&FF_FRAMEMASK].x;
-		spr_topoffset += (fixed_t)sprinfo->offset[thing->frame&FF_FRAMEMASK].y;
-	}
+	spr_offset += (fixed_t)sprinfo->offset[thing->frame&FF_FRAMEMASK].x;
+	spr_topoffset += (fixed_t)sprinfo->offset[thing->frame&FF_FRAMEMASK].y;
 #endif
 
 	if (papersprite)

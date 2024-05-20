@@ -1628,7 +1628,6 @@ static void R_ParseSpriteInfo(boolean spr2)
 
 	// allocate a spriteinfo
 	info = Z_Calloc(sizeof(spriteinfo_t), PU_STATIC, NULL);
-	info->available = true;
 
 	// Left Curly Brace
 	sprinfoToken = M_GetToken(NULL);
