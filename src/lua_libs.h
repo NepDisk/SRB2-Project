@@ -29,8 +29,8 @@ extern boolean ignoregameinputs;
 #define META_SKINCOLOR "SKINCOLOR_T*"
 #define META_COLORRAMP "SKINCOLOR_T*RAMP"
 #define META_SPRITEINFO "SPRITEINFO_T*"
-#define META_COORDLIST "spriteframecoord_t[]"
-#define META_FRAMECOORD "spriteframecoord_t*"
+#define META_COORDLIST "SPRITEFRAMECOORD_T[]"
+#define META_FRAMECOORD "SPRITEFRAMECOORD_T*"
 
 #define META_TAGLIST "TAGLIST"
 
