@@ -198,8 +198,8 @@ void R_DrawFloorSplat(vissprite_t *spr)
 		sprinfo = &spriteinfo[mobj->sprite];
 	if (sprinfo->available)
 	{
-		topoffset += sprinfo->offset[mobj->frame&FF_FRAMEMASK].y;
-		leftoffset += sprinfo->offset[mobj->frame&FF_FRAMEMASK].x;
+		topoffset += (fixed_t)sprinfo->offset[mobj->frame&FF_FRAMEMASK].y;
+		leftoffset += (fixed_t)sprinfo->offset[mobj->frame&FF_FRAMEMASK].x;
 	}
 #endif
 
