@@ -917,7 +917,7 @@ static void readspriteframe(MYFILE *f, spriteinfo_t *sprinfo, UINT8 frame)
 					break;
 			}
 			strupr(word);
-			value = atoi(word2); // used for numerical settings
+			value = (INT32)get_number(word2); // used for numerical settings
 
 			if (fastcmp(word, "XPIVOT")) {
 				sprinfo->pivot[frame].x = value;

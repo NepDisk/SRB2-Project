@@ -1532,27 +1532,27 @@ static void R_ParseSpriteInfoFrame(spriteinfo_t *info)
 				{
 					Z_Free(sprinfoToken);
 					sprinfoToken = M_GetToken(NULL);
-					frameXPivot = atoi(sprinfoToken);
+					frameXPivot = (INT32)get_number(sprinfoToken);
 					info->available = true;
 				}
 				else if (stricmp(sprinfoToken, "YPIVOT")==0)
 				{
 					Z_Free(sprinfoToken);
 					sprinfoToken = M_GetToken(NULL);
-					frameYPivot = atoi(sprinfoToken);
+					frameYPivot = (INT32)get_number(sprinfoToken);
 					info->available = true;
 				}
 				else if (stricmp(sprinfoToken, "XOFFSET")==0)
 				{
 					Z_Free(sprinfoToken);
 					sprinfoToken = M_GetToken(NULL);
-					frameXOffset = atoi(sprinfoToken);
+					frameXOffset = (INT32)get_number(sprinfoToken);
 				}
 				else if (stricmp(sprinfoToken, "YOFFSET")==0)
 				{
 					Z_Free(sprinfoToken);
 					sprinfoToken = M_GetToken(NULL);
-					frameYOffset = atoi(sprinfoToken);
+					frameYOffset = (INT32)get_number(sprinfoToken);
 				}
 				else if (stricmp(sprinfoToken, "ROTAXIS")==0)
 				{
