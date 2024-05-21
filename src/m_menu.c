@@ -12297,8 +12297,8 @@ static void M_DrawSetupMultiPlayerMenu(void)
 
 	scale = FixedDiv(skins[setupm_fakeskin]->highresscale, skins[setupm_fakeskin]->shieldscale);
 	V_DrawFixedPatch(
-		(x<<FRACBITS) + FixedMul(spr_offset, scale),
-		(chary<<FRACBITS) + FixedMul(spr_topoffset, scale),
+		(x<<FRACBITS) - FixedMul(spr_offset, scale),
+		(chary<<FRACBITS) - FixedMul(spr_topoffset, scale),
 		scale, flags, patch, colormap);
 
 	goto colordraw;
