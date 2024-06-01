@@ -917,12 +917,18 @@ static void readspriteframe(MYFILE *f, spriteinfo_t *sprinfo, UINT8 frame)
 					break;
 			}
 			strupr(word);
-			value = atoi(word2); // used for numerical settings
+			value = (INT32)get_number(word2); // used for numerical settings
 
-			if (fastcmp(word, "XPIVOT"))
+			if (fastcmp(word, "XPIVOT")) {
 				sprinfo->pivot[frame].x = value;
-			else if (fastcmp(word, "YPIVOT"))
+				sprinfo->available = true;
+			} else if (fastcmp(word, "YPIVOT")) {
 				sprinfo->pivot[frame].y = value;
+				sprinfo->available = true;
+			} else if (fastcmp(word, "XOFFSET"))
+				sprinfo->offset[frame].x = value;
+			else if (fastcmp(word, "YOFFSET"))
+				sprinfo->offset[frame].y = value;
 			// TODO: 2.3: Delete
 			else if (fastcmp(word, "ROTAXIS"))
 				deh_warning("SpriteInfo: ROTAXIS is deprecated and will be removed.");
@@ -950,7 +956,6 @@ void readspriteinfo(MYFILE *f, INT32 num, boolean sprite2)
 
 	// allocate a spriteinfo
 	spriteinfo_t *info = Z_Calloc(sizeof(spriteinfo_t), PU_STATIC, NULL);
-	info->available = true;
 
 	do
 	{

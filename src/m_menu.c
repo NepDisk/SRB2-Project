@@ -12287,10 +12287,13 @@ static void M_DrawPlayerSetupFollowItem(INT32 x, INT32 y, fixed_t scale, INT32 f
 
 static void M_DrawSetupMultiPlayerMenu(void)
 {
-	INT32 x, y, cursory = 0, flags = 0;
+	INT32 x, y, cursory = 0, flags = 0, spr_offset = 0, spr_topoffset = 0;
 	fixed_t scale;
 	spritedef_t *sprdef;
 	spriteframe_t *sprframe;
+#ifdef ROTSPRITE
+	spriteinfo_t *sprinfo;
+#endif
 	patch_t *patch;
 	UINT8 *colormap;
 
@@ -12402,14 +12405,20 @@ static void M_DrawSetupMultiPlayerMenu(void)
 	patch = W_CachePatchNum(sprframe->lumppat[0], PU_PATCH);
 	if (sprframe->flip & 1) // Only for first sprite
 		flags |= V_FLIP; // This sprite is left/right flipped!
+	
+#ifdef ROTSPRITE
+	sprinfo = &skins[setupm_fakeskin]->sprinfo[multi_spr2];
+	spr_offset = sprinfo->offset[multi_frame].x;
+	spr_topoffset = sprinfo->offset[multi_frame].y;
+#endif
 
 	M_DrawPlayerSetupFollowItem(x, chary, scale, flags & ~V_FLIP);
 
+	scale = FixedDiv(skins[setupm_fakeskin]->highresscale, skins[setupm_fakeskin]->shieldscale);
 	V_DrawFixedPatch(
-		x<<FRACBITS,
-		chary<<FRACBITS,
-		scale,
-		flags, patch, colormap);
+		(x<<FRACBITS) - FixedMul(spr_offset, scale),
+		(chary<<FRACBITS) - FixedMul(spr_topoffset, scale),
+		scale, flags, patch, colormap);
 
 	goto colordraw;
 
