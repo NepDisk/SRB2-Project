@@ -47,8 +47,8 @@ fixed_t skyscale;
 
 /** \brief used for keeping track of the current sky
 */
-INT32 levelskynum;
-INT32 globallevelskynum;
+char *levelsky; // formerly INT32
+const char *globallevelsky; // formerly INT32
 
 /**	\brief	The R_SetupSkyDraw function
 

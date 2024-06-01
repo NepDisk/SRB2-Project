@@ -2776,6 +2776,7 @@ enum mapheaderinfo_e
 	mapheaderinfo_sstimer,
 	mapheaderinfo_ssspheres,
 	mapheaderinfo_gravity,
+	mapheaderinfo_sky,
 };
 
 static const char *const mapheaderinfo_opt[] = {
@@ -2896,6 +2897,9 @@ static int mapheaderinfo_get(lua_State *L)
 		break;
 	case mapheaderinfo_skynum:
 		lua_pushinteger(L, header->skynum);
+		break;
+	case mapheaderinfo_sky:
+		lua_pushstring(L, header->sky);
 		break;
 	case mapheaderinfo_skybox_scalex:
 		lua_pushinteger(L, header->skybox_scalex);

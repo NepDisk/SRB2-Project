@@ -1687,6 +1687,8 @@ void readlevelheader(MYFILE *f, INT32 num)
 				mapheaderinfo[num-1]->weather = (UINT8)get_number(word2);
 			else if (fastcmp(word, "SKYNUM"))
 				mapheaderinfo[num-1]->skynum = (INT16)i;
+			else if (fastcmp(word, "SKY"))
+				strncpy(mapheaderinfo[num-1]->sky, word2, 8);
 			else if (fastcmp(word, "INTERSCREEN"))
 				strncpy(mapheaderinfo[num-1]->interscreen, word2, sizeof(mapheaderinfo[num-1]->interscreen)-1);
 			else if (fastcmp(word, "PRECUTSCENENUM"))

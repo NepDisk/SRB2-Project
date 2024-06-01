@@ -952,6 +952,7 @@ void D_RegisterClientCommands(void)
 	COM_AddCommand("teleport", Command_Teleport_f, COM_LUA);
 	COM_AddCommand("rteleport", Command_RTeleport_f, COM_LUA);
 	COM_AddCommand("skynum", Command_Skynum_f, COM_LUA);
+	COM_AddCommand("changesky", Command_Skynum_f, COM_LUA);
 	COM_AddCommand("weather", Command_Weather_f, COM_LUA);
 	COM_AddCommand("toggletwod", Command_Toggletwod_f, COM_LUA);
 #ifdef _DEBUG

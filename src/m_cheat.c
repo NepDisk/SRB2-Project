@@ -705,14 +705,20 @@ void Command_Skynum_f(void)
 
 	if (COM_Argc() != 2)
 	{
-		CONS_Printf(M_GetText("skynum <sky#>: change the sky\n"));
-		CONS_Printf(M_GetText("Current sky is %d\n"), levelskynum);
+		CONS_Printf(M_GetText("changesky <name/number>: Change the sky to the given texture\nBoth numbered skies and full texture names are supported.\n"));
+		CONS_Printf(M_GetText("Current sky is %s\n"), levelsky);
 		return;
 	}
 
 	CONS_Printf(M_GetText("Previewing sky %s...\n"), COM_Argv(1));
 
-	P_SetupLevelSky(atoi(COM_Argv(1)), false);
+	char skynum_compat[8];
+	snprintf(skynum_compat, 8, "SKY%d", atoi(COM_Argv(1)));
+
+	if (atoi(COM_Argv(1)) != 0)
+		P_SetupLevelSky(skynum_compat, false);
+	else
+		P_SetupLevelSky(COM_Argv(1), false);
 }
 
 void Command_Weather_f(void)

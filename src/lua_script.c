@@ -352,11 +352,11 @@ int LUA_PushGlobals(lua_State *L, const char *word)
 	} else if (fastcmp(word,"globalweather")) {
 		lua_pushinteger(L, globalweather);
 		return 1;
-	} else if (fastcmp(word,"levelskynum")) {
-		lua_pushinteger(L, levelskynum);
+	} else if (fastcmp(word,"levelsky")) {
+		lua_pushstring(L, levelsky);
 		return 1;
-	} else if (fastcmp(word,"globallevelskynum")) {
-		lua_pushinteger(L, globallevelskynum);
+	} else if (fastcmp(word,"globallevelsky")) {
+		lua_pushstring(L, globallevelsky);
 		return 1;
 	} else if (fastcmp(word,"mapmusname")) {
 		lua_pushstring(L, mapmusname);

@@ -378,6 +378,7 @@ static void P_ClearSingleMapHeaderInfo(INT16 i)
 	mapheaderinfo[num]->forcecharacter[0] = '\0';
 	mapheaderinfo[num]->weather = 0;
 	mapheaderinfo[num]->skynum = 1;
+	mapheaderinfo[num]->sky[0] = '-';
 	mapheaderinfo[num]->skybox_scalex = 16;
 	mapheaderinfo[num]->skybox_scaley = 16;
 	mapheaderinfo[num]->skybox_scalez = 16;
@@ -7171,17 +7172,17 @@ static boolean P_LoadMapFromFile(void)
 /** Sets up a sky texture to use for the level.
   * The sky texture is used instead of F_SKY1.
   */
-void P_SetupLevelSky(INT32 skynum, boolean global)
+void P_SetupLevelSky(const char *sky, boolean global)
 {
-	char skytexname[12];
-
-	sprintf(skytexname, "SKY%d", skynum);
-	skytexture = R_TextureNumForName(skytexname);
-	levelskynum = skynum;
+	skytexture = R_TextureNumForName(sky);
+	if (levelsky != NULL)
+		free(levelsky);
+	levelsky = malloc(9);
+	strcpy(levelsky, sky);
 
 	// Global change
 	if (global)
-		globallevelskynum = levelskynum;
+		globallevelsky = levelsky;
 
 	// Don't go beyond for dedicated servers
 	if (dedicated)
@@ -7831,6 +7832,9 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	sector_t *ss;
 	levelloading = true;
 
+	// Backwards compatibility with level headers using SkyNum.
+	char skynum_compat[11];
+
 	// This is needed. Don't touch.
 	maptol = mapheaderinfo[gamemap-1]->typeoflevel;
 	gametyperules = gametypedefaultrules[gametype];
@@ -8008,7 +8012,14 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	CON_SetupBackColormap();
 
 	// SRB2 determines the sky texture to be used depending on the map header.
-	P_SetupLevelSky(mapheaderinfo[gamemap-1]->skynum, true);
+	// Sky will attempt to load first, and if that fails, SkyNum will be attempted instead.
+	if (mapheaderinfo[gamemap-1]->sky[0] == (INT32)('-'))
+	{
+		snprintf(skynum_compat, 10, "SKY%d", mapheaderinfo[gamemap-1]->skynum);
+		P_SetupLevelSky(skynum_compat, true);
+	}
+	else
+		P_SetupLevelSky(mapheaderinfo[gamemap-1]->sky, true);
 
 	P_ResetSpawnpoints();
 
