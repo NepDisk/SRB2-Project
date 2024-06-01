@@ -17,6 +17,7 @@
 #include "r_skins.h"
 #include "b_bot.h"
 #include "z_zone.h"
+#include "y_inter.h"
 
 #include "lua_script.h"
 #include "lua_libs.h"
@@ -1067,6 +1068,34 @@ int LUA_HookNameChange(player_t *plr, const char *name)
 		LUA_PushUserdata(gL, plr, META_PLAYER); // Player that changed name
 		lua_pushstring(gL, name);   // New player name
 		call_hooks(&hook, 1, res_false);
+	}
+	return hook.status;
+}
+
+int LUA_HookIntermissionThinker(boolean pstagefailed, INT32 intertic, INT32 tallydonetic, INT32 endtic)
+{
+	Hook_State hook;
+	if (prepare_hook(&hook, 0, HOOK(IntermissionThinker)))
+	{
+		lua_pushboolean(gL, pstagefailed);
+		lua_pushinteger(gL, intertic);
+		lua_pushinteger(gL, tallydonetic);
+		lua_pushinteger(gL, endtic);
+		lua_pushinteger(gL, intertype);
+		call_hooks(&hook, 1, res_force);
+	}
+	return hook.status;
+}
+
+int LUA_HookMapFinish(UINT8 pskipstats, INT16 currentmap, INT16 pnextmap)
+{
+	Hook_State hook;
+	if (prepare_hook(&hook, 0, HOOK(MapFinish)))
+	{
+		lua_pushinteger(gL, pskipstats);
+		lua_pushinteger(gL, currentmap + 1);
+		lua_pushinteger(gL, pnextmap + 1);
+		call_hooks(&hook, 1, res_force);
 	}
 	return hook.status;
 }
