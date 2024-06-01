@@ -958,6 +958,7 @@ enum mapthing_e {
 	mapthing_taglist,
 	mapthing_args,
 	mapthing_stringargs,
+	mapthing_customargs,
 	mapthing_mobj,
 };
 
@@ -979,6 +980,7 @@ const char *const mapthing_opt[] = {
 	"taglist",
 	"args",
 	"stringargs",
+	"customargs",
 	"mobj",
 	NULL,
 };
@@ -1056,6 +1058,20 @@ static int mapthing_get(lua_State *L)
 			break;
 		case mapthing_stringargs:
 			LUA_PushUserdata(L, mt->stringargs, META_THINGSTRINGARGS);
+			break;
+		case mapthing_customargs:
+			lua_getfield(L, LUA_REGISTRYINDEX, LREG_EXTVARS);
+			I_Assert(lua_istable(L, -1));
+			lua_pushlightuserdata(L, mt);
+			lua_rawget(L, -2);
+			if (!lua_istable(L, -1)) { // no extra values table
+				CONS_Debug(DBG_LUA, M_GetText("'%s' has no extvars table; returning nil.\n"), "mapthing_t");
+				return 0;
+			}
+			lua_pushvalue(L, 2); // field name
+			lua_gettable(L, -2);
+			if (lua_isnil(L, -1)) // no value for this field
+				CONS_Debug(DBG_LUA, M_GetText("'%s' ha; returning nil.\n"), "mapthing_t");
 			break;
 		case mapthing_mobj:
 			LUA_PushUserdata(L, mt->mobj, META_MOBJ);
