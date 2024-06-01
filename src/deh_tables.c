@@ -5813,6 +5813,10 @@ struct int_const_s const INT_CONST[] = {
 	{"PT_ADDTHINGS",PT_ADDTHINGS},
 	{"PT_EARLYOUT",PT_EARLYOUT},
 
+	// screen.h constants
+	{"BASEVIDWIDTH",BASEVIDWIDTH},
+	{"BASEVIDHEIGHT",BASEVIDHEIGHT},
+
 	{NULL,0}
 };
 
