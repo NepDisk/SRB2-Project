@@ -1782,8 +1782,6 @@ void D_MapChange(INT32 mapnum, INT32 newgametype, boolean pultmode, boolean rese
 		}
 
 		chmappending++;
-		if (netgame)
-			WRITEUINT32(buf_p, M_RandomizedSeed()); // random seed
 		SendNetXCmd(XD_MAP, buf, buf_p - buf);
 	}
 }
@@ -2092,9 +2090,6 @@ static void Got_Mapcmd(UINT8 **cp, INT32 playernum)
 
 	READSTRINGN(*cp, mapname, MAX_WADPATH);
 
-	if (netgame)
-		P_SetRandSeed(READUINT32(*cp));
-
 	if (!skipprecutscene)
 	{
 		DEBFILE(va("Warping to %s [resetplayer=%d lastgametype=%d gametype=%d cpnd=%d]\n",
@@ -2260,14 +2255,17 @@ static void Got_Suicide(UINT8 **cp, INT32 playernum)
   */
 static void Got_RandomSeed(UINT8 **cp, INT32 playernum)
 {
-	UINT32 seed;
-
-	seed = READUINT32(*cp);
+	size_t i;
+	rnstate_t new_state;
 
 	if (playernum != serverplayer) // it's not from the server, wtf?
 		return;
 
-	P_SetRandSeed(seed);
+	for (i = 0; i < 3; i++)
+		new_state.data[i] = READUINT32(*cp);
+	new_state.counter = READUINT32(*cp);
+
+	P_SetRandState(&new_state);
 }
 
 /** Clears all players' scores in a netgame.

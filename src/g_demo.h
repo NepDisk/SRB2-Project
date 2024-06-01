@@ -39,7 +39,18 @@ extern demo_file_override_e demofileoverride;
 // Quit after playing a demo from cmdline.
 extern boolean singledemo;
 extern boolean demo_start;
-extern boolean demo_forwardmove_rng;
+
+// TODO: 2.3: OLD and OLD_FORWARDMOVE demos no longer need to be supported.
+typedef enum {
+	// The new SFC32 RNG.
+	DRM_NEW,
+	// The old Xorshift* RNG.
+	DRM_OLD,
+	// The old Xorshift* RNG, with forwardmove.
+	DRM_OLD_FORWARDMOVE
+} demo_rng_mode_e;
+
+extern demo_rng_mode_e demorngmode;
 extern boolean demosynced;
 
 extern mobj_t *metalplayback;

@@ -58,7 +58,7 @@ static UINT8 demoflags;
 UINT16 demoversion;
 boolean singledemo; // quit after playing a demo from cmdline
 boolean demo_start; // don't start playing demo right away
-boolean demo_forwardmove_rng; // old demo backwards compatibility
+demo_rng_mode_e demorngmode = DRM_NEW;
 boolean demosynced = true; // console warning message
 
 boolean metalrecording; // recording as metal sonic
@@ -98,7 +98,7 @@ demoghost *ghosts = NULL;
 // DEMO RECORDING
 //
 
-#define DEMOVERSION 0x0012
+#define DEMOVERSION 0x0013
 #define DEMOHEADER  "\xF0" "SRB2Replay" "\x0F"
 
 #define DF_GHOST        0x01 // This demo contains ghost data too!
@@ -1508,7 +1508,10 @@ void G_BeginRecording(void)
 			break;
 	}
 
-	WRITEUINT32(demo_p,P_GetInitSeed());
+	const rnstate_t initstate = P_GetInitState();
+	for (i = 0; i < 3; i++)
+		WRITEUINT32(demo_p, initstate.data[i]);
+	WRITEUINT32(demo_p, initstate.counter);
 
 	// Name
 	for (i = 0; i < 16 && cv_playername.string[i]; i++)
@@ -1997,8 +2000,12 @@ void G_DoPlayDemo(char *defdemoname)
 	UINT8 version,subversion,charability,charability2,thrustfactor,accelstart,acceleration;
 	pflags_t pflags;
 	UINT32 randseed, followitem;
+	rnstate_t randstate;
 	fixed_t camerascale,shieldscale,actionspd,mindash,maxdash,normalspeed,runspeed,jumpfactor,height,spinheight;
 	char msg[1024];
+
+	// For compiler warnings
+	randseed = 0;
 
 	skin[16] = '\0';
 	color[MAXCOLORNAME] = '\0';
@@ -2056,7 +2063,17 @@ void G_DoPlayDemo(char *defdemoname)
 	version = READUINT8(demo_p);
 	subversion = READUINT8(demo_p);
 	demoversion = READUINT16(demo_p);
-	demo_forwardmove_rng = (demoversion < 0x0010);
+
+	demorngmode = DRM_NEW;
+	if (demoversion < 0x0010)
+	{
+		demorngmode = DRM_OLD_FORWARDMOVE;
+	}
+	else if (demoversion <= 0x0012)
+	{
+		demorngmode = DRM_OLD;
+	}
+
 #ifdef OLD22DEMOCOMPAT
 	if (demoversion < 0x000c || demoversion > DEMOVERSION)
 #else
@@ -2179,7 +2196,16 @@ void G_DoPlayDemo(char *defdemoname)
 	}
 
 	// Random seed
-	randseed = READUINT32(demo_p);
+	if (demorngmode != DRM_NEW)
+	{
+		randseed = READUINT32(demo_p);
+	}
+	else
+	{
+		for (i = 0; i < 3; i++)
+			randstate.data[i] = READUINT32(demo_p);
+		randstate.counter = READUINT32(demo_p);
+	}
 
 	// Player name
 	M_Memcpy(player_names[0],demo_p,16);
@@ -2246,6 +2272,23 @@ void G_DoPlayDemo(char *defdemoname)
 		return;
 	}
 
+	if (demorngmode != DRM_NEW)
+	{
+		if (randseed == 0)
+		{
+			// If 0 was the generated seed, the seed would have been overridden
+			// to 0xBADE4404. Therefore, a valid demo can never have this seed.
+			snprintf(msg, 1024, M_GetText("Demo %s has an invalid random seed.\n"), pdemoname);
+			CONS_Alert(CONS_ERROR, "%s", msg);
+			M_StartMessage(msg, NULL, MM_NOTHING);
+			Z_Free(pdemoname);
+			Z_Free(demobuffer);
+			demoplayback = false;
+			titledemo = false;
+			return;
+		}
+	}
+
 	Z_Free(pdemoname);
 
 	memset(&oldcmd,0,sizeof(oldcmd));
@@ -2264,7 +2307,14 @@ void G_DoPlayDemo(char *defdemoname)
 	displayplayer = consoleplayer = 0;
 	memset(playeringame,0,sizeof(playeringame));
 	playeringame[0] = true;
-	P_SetRandSeed(randseed);
+	if (demorngmode != DRM_NEW)
+	{
+		P_SetOldRandSeed(randseed);
+	}
+	else
+	{
+		P_SetRandState(&randstate);
+	}
 	G_InitNew(false, G_BuildMapName(gamemap), true, true, false);
 
 	// Set color
@@ -2763,6 +2813,8 @@ static void G_StopDemoRecording(void)
 		else
 			CONS_Alert(CONS_WARNING, M_GetText("Demo %s not saved\n"), demoname);
 	}
+	// Refresh the seed and ensure we're in new RNG mode.
+	P_RandomInitialize();
 }
 
 // Stops metal sonic's demo. Separate from other functions because metal + replays can coexist
@@ -2867,6 +2919,8 @@ void G_StopDemo(void)
 
 	G_SetGamestate(GS_NULL);
 	wipegamestate = GS_NULL;
+	// Ensure the demo seed is cleared and that we're in new RNG mode.
+	P_RandomInitialize();
 	SV_StopServer();
 	SV_ResetServer();
 }

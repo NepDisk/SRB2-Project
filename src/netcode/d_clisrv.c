@@ -1533,8 +1533,10 @@ void NetUpdate(void)
 				else if ((dedicatedidle += realtics) >= dedicatedidletime)
 				{
 					const char *idlereason = "at round start";
-					if (leveltime > 3)
+					if (leveltime > 3) {
 						idlereason = va("for %d seconds", dedicatedidle/TICRATE);
+						P_RandomInitialize();
+					}
 
 					CONS_Printf("DEDICATED: No nodes %s, idling...\n", idlereason);
 					realtics = 0;
@@ -1792,7 +1794,7 @@ INT16 Consistancy(void)
 	// I give up
 	// Coop desynching enemies is painful
 	if (!G_PlatformGametype())
-		ret += P_GetRandSeed();
+		ret += P_GetRandDebugValue();
 
 #ifdef MOBJCONSISTANCY
 	if (gamestate == GS_LEVEL)

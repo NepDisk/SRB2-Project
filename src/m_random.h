@@ -30,8 +30,7 @@ fixed_t M_RandomFixed(void);
 UINT8   M_RandomByte(void);
 INT32   M_RandomKey(INT32 a);
 INT32   M_RandomRange(INT32 a, INT32 b);
-boolean M_RandomSeedFromOS(void);
-void    M_RandomSeed(UINT32 a);
+void    M_RandomInitialize(void);
 
 // PRNG functions
 #ifdef DEBUGRANDOM
@@ -58,21 +57,32 @@ INT32   P_RandomRange(INT32 a, INT32 b);
 #define P_RandomChance(p) (P_RandomFixed() < p) // and FRACUNIT (100%), returns true p% of the time
 
 // Debugging
-fixed_t P_RandomPeek(void);
+UINT32 P_RandomPeek(void);
+UINT32 P_GetRandDebugValue(void);
+void P_SetOldRandSeed(UINT32 seed);
+
+boolean P_UseOldRng(void);
+
+typedef struct rnstate_s {
+	UINT32 data[3];
+	UINT32 counter;
+} rnstate_t;
 
 // Working with the seed for PRNG
 #ifdef DEBUGRANDOM
-#define P_GetRandSeed() P_GetRandSeedD(__FILE__, __LINE__)
-#define P_GetInitSeed() P_GetInitSeedD(__FILE__, __LINE__)
-#define P_SetRandSeed(s) P_SetRandSeedD(__FILE__, __LINE__, s)
-UINT32 P_GetRandSeedD(const char *rfile, INT32 rline);
-UINT32 P_GetInitSeedD(const char *rfile, INT32 rline);
-void P_SetRandSeedD(const char *rfile, INT32 rline, UINT32 seed);
+#define P_GetRandState() P_GetRandStateD(__FILE__, __LINE__)
+#define P_GetInitState() P_GetInitStateD(__FILE__, __LINE__)
+#define P_SetRandState(s) P_SetRandStateD(__FILE__, __LINE__, s)
+#define P_RandomInitialize() P_RandomInitializeD(__FILE__, __LINE__)
+rnstate_t P_GetRandStateD(const char *rfile, INT32 rline);
+rnstate_t P_GetInitStateD(const char *rfile, INT32 rline);
+void P_SetRandStateD(const char *rfile, INT32 rline, const rnstate_t *state);
+void P_RandomInitialize(const char *rfile, INT32 rline);
 #else
-UINT32 P_GetRandSeed(void);
-UINT32 P_GetInitSeed(void);
-void P_SetRandSeed(UINT32 seed);
+rnstate_t P_GetRandState(void);
+rnstate_t P_GetInitState(void);
+void P_SetRandState(const rnstate_t *state);
+void P_RandomInitialize(void);
 #endif
-UINT32 M_RandomizedSeed(void);
 
 #endif

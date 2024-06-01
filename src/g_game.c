@@ -5083,14 +5083,14 @@ void G_InitNew(UINT8 pultmode, const char *mapname, boolean resetplayer, boolean
 	if (netgame || multiplayer) // Nice try, haxor.
 		pultmode = false;
 
-	if (!demoplayback && !netgame) // Netgame sets random seed elsewhere, demo playback sets seed just before us!
-		P_SetRandSeed(M_RandomizedSeed()); // Use a more "Random" random seed
-
 	if (resetplayer)
 	{
 		// Clear a bunch of variables
 		numgameovers = tokenlist = token = sstimer = redscore = bluescore = lastmap = 0;
 		countdown = countdown2 = exitfadestarted = 0;
+
+		if (!demoplayback && !netgame) // Netgame sets random seed elsewhere, demo playback sets seed just before us!
+			P_RandomInitialize();
 
 		if (!FLS)
 		{

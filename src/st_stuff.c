@@ -549,13 +549,19 @@ static void ST_drawDebugInfo(void)
 
 	if (cv_debug & DBG_RANDOMIZER) // randomizer testing
 	{
-		fixed_t peekres = P_RandomPeek();
-		peekres *= 10000;     // Change from fixed point
-		peekres >>= FRACBITS; // to displayable decimal
+		UINT32 peekres =  P_RandomPeek();
+		UINT32 debug = P_GetRandDebugValue();
 
-		V_DrawDebugLine(va("Init: %08x", P_GetInitSeed()));
-		V_DrawDebugLine(va("Seed: %08x", P_GetRandSeed()));
-		V_DrawDebugLine(va("==  :    .%04d", peekres));
+		if(P_UseOldRng())
+		{
+			V_DrawDebugLine("RNGMode: Old");
+		}
+		else
+		{
+			V_DrawDebugLine("RNGMode: New");
+		}
+		V_DrawDebugLine(va("DVal: %08x", debug));
+		V_DrawDebugLine(va("Next: %08x", peekres));
 
 		height += h/2;
 	}
@@ -2841,7 +2847,7 @@ static void ST_overlayDrawer(void)
 		}
 		else if (cv_powerupdisplay.value == 2 && LUA_HudEnabled(hud_powerups))
 			ST_drawPowerupHUD();  // same as it ever was...
-		
+
 	}
 	else if (!(netgame || multiplayer) && cv_powerupdisplay.value == 2 && LUA_HudEnabled(hud_powerups))
 		ST_drawPowerupHUD(); // same as it ever was...

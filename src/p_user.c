@@ -11777,7 +11777,7 @@ void P_PlayerThink(player_t *player)
 
 	cmd = &player->cmd;
 
-	if (demoplayback && demo_forwardmove_rng)
+	if (demoplayback && demorngmode == DRM_OLD_FORWARDMOVE)
 	{
 		// Smelly demo backwards compatibility
 		if (cmd->forwardmove)
