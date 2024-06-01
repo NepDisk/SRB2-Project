@@ -1316,7 +1316,7 @@ static void SendNameAndColor(void)
 
 		SetColorLocal(consoleplayer, cv_playercolor.value);
 
-		if (splitscreen)
+		if (splitscreen || pickedchar == -1)
 			SetSkinLocal(consoleplayer, R_SkinAvailable(cv_skin.string));
 		else
 			SetSkinLocal(consoleplayer, pickedchar);
@@ -4949,8 +4949,10 @@ static boolean Skin2_CanChange(const char *valstr)
   */
 static void Skin_OnChange(void)
 {
+	pickedchar = R_SkinAvailable(cv_skin.string); // Update picked character for single player
+	
 	if (!Playing())
-		return;
+		return; // do whatever you want
 
 	if (!(multiplayer || netgame)) // In single player.
 	{
@@ -4965,8 +4967,7 @@ static void Skin_OnChange(void)
 		SetSkinLocal(consoleplayer, R_SkinAvailable(cv_skin.string));
 		return;
 	}
-
-	SendNameAndColor();
+	SendNameAndColor(); // Send skin to server
 }
 
 /** Sends a skin change for the secondary splitscreen player, unless that
