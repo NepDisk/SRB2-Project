@@ -1971,6 +1971,8 @@ static void R_ProjectSprite(mobj_t *thing)
 	if (spritexscale < 1 || spriteyscale < 1)
 		return;
 
+	SINT8 hflipoffset = 1;
+	SINT8 vflipoffset = 1;
 	if (thing->renderflags & RF_ABSOLUTEOFFSETS)
 	{
 		spr_offset = interp.spritexoffset;
@@ -1978,14 +1980,20 @@ static void R_ProjectSprite(mobj_t *thing)
 	}
 	else
 	{
-		SINT8 flipoffset = 1;
+		if (!(thing->renderflags & RF_FLIPOFFSETS) && flip)
+			hflipoffset = -1;
+		if (!(thing->renderflags & RF_FLIPOFFSETS) && R_ThingVerticallyFlipped(thing))
+			vflipoffset = -1;
 
-		if ((thing->renderflags & RF_FLIPOFFSETS) && flip)
-			flipoffset = -1;
-
-		spr_offset += interp.spritexoffset * flipoffset;
-		spr_topoffset += interp.spriteyoffset * flipoffset;
+		spr_offset += interp.spritexoffset * hflipoffset;
+		spr_topoffset += interp.spriteyoffset * vflipoffset;
 	}
+	
+#ifdef ROTSPRITE
+	// let spriteinfo offset by units less than a pixel
+	spr_offset += (fixed_t)sprinfo->offset[thing->frame&FF_FRAMEMASK].x * hflipoffset;
+	spr_topoffset += (fixed_t)sprinfo->offset[thing->frame&FF_FRAMEMASK].y * vflipoffset;
+#endif
 
 	if (flip)
 		offset = spr_offset - spr_width;

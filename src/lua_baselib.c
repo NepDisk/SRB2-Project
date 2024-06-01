@@ -171,8 +171,8 @@ static const struct {
 	{META_SKINCOLOR,    "skincolor_t"},
 	{META_COLORRAMP,    "skincolor_t.ramp"},
 	{META_SPRITEINFO,   "spriteinfo_t"},
-	{META_PIVOTLIST,    "spriteframepivot_t[]"},
-	{META_FRAMEPIVOT,   "spriteframepivot_t"},
+	{META_COORDLIST,    "spriteframecoord_t[]"},
+	{META_FRAMECOORD,   "spriteframecoord_t"},
 
 	{META_TAGLIST,      "taglist"},
 

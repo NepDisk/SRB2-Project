@@ -1490,8 +1490,10 @@ static void R_ParseSpriteInfoFrame(spriteinfo_t *info)
 	size_t sprinfoTokenLength;
 	char *frameChar = NULL;
 	UINT8 frameFrame = 0xFF;
-	INT16 frameXPivot = 0;
-	INT16 frameYPivot = 0;
+	INT32 frameXPivot = 0;
+	INT32 frameYPivot = 0;
+	INT32 frameXOffset = 0;
+	INT32 frameYOffset = 0;
 
 	// Sprite identifier
 	sprinfoToken = M_GetToken(NULL);
@@ -1530,13 +1532,27 @@ static void R_ParseSpriteInfoFrame(spriteinfo_t *info)
 				{
 					Z_Free(sprinfoToken);
 					sprinfoToken = M_GetToken(NULL);
-					frameXPivot = atoi(sprinfoToken);
+					frameXPivot = (INT32)get_number(sprinfoToken);
+					info->available = true;
 				}
 				else if (stricmp(sprinfoToken, "YPIVOT")==0)
 				{
 					Z_Free(sprinfoToken);
 					sprinfoToken = M_GetToken(NULL);
-					frameYPivot = atoi(sprinfoToken);
+					frameYPivot = (INT32)get_number(sprinfoToken);
+					info->available = true;
+				}
+				else if (stricmp(sprinfoToken, "XOFFSET")==0)
+				{
+					Z_Free(sprinfoToken);
+					sprinfoToken = M_GetToken(NULL);
+					frameXOffset = (INT32)get_number(sprinfoToken);
+				}
+				else if (stricmp(sprinfoToken, "YOFFSET")==0)
+				{
+					Z_Free(sprinfoToken);
+					sprinfoToken = M_GetToken(NULL);
+					frameYOffset = (INT32)get_number(sprinfoToken);
 				}
 				else if (stricmp(sprinfoToken, "ROTAXIS")==0)
 				{
@@ -1558,6 +1574,8 @@ static void R_ParseSpriteInfoFrame(spriteinfo_t *info)
 	// set fields
 	info->pivot[frameFrame].x = frameXPivot;
 	info->pivot[frameFrame].y = frameYPivot;
+	info->offset[frameFrame].x = frameXOffset;
+	info->offset[frameFrame].y = frameYOffset;
 }
 
 //
@@ -1612,7 +1630,6 @@ static void R_ParseSpriteInfo(boolean spr2)
 
 	// allocate a spriteinfo
 	info = Z_Calloc(sizeof(spriteinfo_t), PU_STATIC, NULL);
-	info->available = true;
 
 	// Left Curly Brace
 	sprinfoToken = M_GetToken(NULL);
