@@ -234,7 +234,7 @@ void COM_BufExecute(void)
 		{
 			if (ptext[i] == '\"' && !quotes && i > 0 && ptext[i-1] != ' ') // Malformed command
 				break;
-			if (ptext[i] == '\"')
+			if (ptext[i] == '\"' && (i == 0 || ptext[i-1] != '\\'))
 				quotes++;
 			if (!(quotes & 1) && ptext[i] == ';')
 				break; // don't break if inside a quoted string
@@ -2643,6 +2643,8 @@ skipwhite:
 				com_token[len] = 0;
 				return data;
 			}
+			if (c == '\\' && *data == '\"')
+				c = *data++; // parse next token literally
 			if (c == '\033')
 				data++;
 			else
