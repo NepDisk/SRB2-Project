@@ -2099,6 +2099,7 @@ mobj_t *P_SpawnGhostMobj(mobj_t *mobj)
 
 	ghost->renderflags = mobj->renderflags;
 	ghost->blendmode = mobj->blendmode;
+	ghost->alpha = mobj->alpha;
 
 	ghost->spritexscale = mobj->spritexscale;
 	ghost->spriteyscale = mobj->spriteyscale;
