@@ -96,12 +96,11 @@ typedef enum
 typedef struct
 {
 	INT32 x, y;
-} spriteframecoord_t;
+} spriteframepivot_t;
 
 typedef struct
 {
-	spriteframecoord_t pivot[MAXFRAMENUM];
-	spriteframecoord_t offset[MAXFRAMENUM];
+	spriteframepivot_t pivot[MAXFRAMENUM];
 	boolean available;
 } spriteinfo_t;
 
