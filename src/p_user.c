@@ -6115,6 +6115,8 @@ static void P_3dMovement(player_t *player)
 	player->aiming = cmd->aiming<<FRACBITS;
 
 	// Forward movement
+	if (cmd->forwardmove > 0)
+		CONS_Printf("fowardmove is %d \n",cmd->forwardmove);
 	if (!((player->exiting /*|| mapreset*/) || (P_PlayerInPain(player) && !onground)))
 	{
 		//movepushforward = cmd->forwardmove * (thrustfactor * acceleration);
