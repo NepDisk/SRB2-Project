@@ -212,7 +212,7 @@ typedef enum
 typedef enum
 {
 	BT_TOUCH,
-	BT_SPINBUST,
+	BT_BRAKEBUST,
 	BT_REGULAR,
 	BT_STRONG,
 } busttype_e;

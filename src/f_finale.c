@@ -4063,7 +4063,7 @@ void F_CutsceneTicker(void)
 		if (netgame && i != serverplayer && !IsPlayerAdmin(i))
 			continue;
 
-		if (players[i].cmd.buttons & BT_SPIN)
+		if (players[i].cmd.buttons & BT_BRAKE)
 		{
 			keypressed = false;
 			cutscene_boostspeed = 1;
@@ -4663,7 +4663,7 @@ void F_TextPromptTicker(void)
 				else
 					continue;
 
-				if ((players[i].cmd.buttons & BT_SPIN) || (players[i].cmd.buttons & BT_JUMP))
+				if ((players[i].cmd.buttons & BT_BRAKE) || (players[i].cmd.buttons & BT_ACCELERATE))
 				{
 					if (timetonext > 1)
 						timetonext--;
@@ -4686,7 +4686,7 @@ void F_TextPromptTicker(void)
 					}
 					keypressed = true; // prevent repeat events
 				}
-				else if (!(players[i].cmd.buttons & BT_SPIN) && !(players[i].cmd.buttons & BT_JUMP))
+				else if (!(players[i].cmd.buttons & BT_BRAKE) && !(players[i].cmd.buttons & BT_ACCELERATE))
 					keypressed = false;
 
 				if (!splitscreen)

@@ -1158,7 +1158,7 @@ void OP_ResetObjectplace(void)
 	if (player->pflags & PF_ATTACKDOWN)
 	{
 		// Are ANY objectplace buttons pressed?  If no, remove flag.
-		if (!(cmd->buttons & (BT_ATTACK|BT_TOSSFLAG|BT_SPIN|BT_WEAPONNEXT|BT_WEAPONPREV)))
+		if (!(cmd->buttons & (BT_ATTACK|BT_TOSSFLAG|BT_BRAKE|BT_WEAPONNEXT|BT_WEAPONPREV)))
 			player->pflags &= ~PF_ATTACKDOWN;
 
 		// Do nothing.
@@ -1265,7 +1265,7 @@ void OP_ResetObjectplace(void)
 	}
 
 	// This places a custom object as defined in the console cv_mapthingnum.
-	if (cmd->buttons & BT_SPIN)
+	if (cmd->buttons & BT_BRAKE)
 	{
 		UINT16 angle;
 
@@ -1317,9 +1317,9 @@ void OP_ObjectplaceMovement(player_t *player)
 	if (!(cmd->angleturn & TICCMD_RECEIVED))
 		ticmiss++;
 
-	if (cmd->buttons & BT_JUMP)
+	if (cmd->buttons & BT_ACCELERATE)
 		player->mo->z += player->mo->scale*cv_speed.value;
-	else if (cmd->buttons & BT_SPIN)
+	else if (cmd->buttons & BT_BRAKE)
 		player->mo->z -= player->mo->scale*cv_speed.value;
 
 	if (cmd->forwardmove != 0)

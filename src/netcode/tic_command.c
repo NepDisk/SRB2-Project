@@ -24,6 +24,9 @@
 #include "../doomstat.h"
 #include "../doomtype.h"
 
+//shart
+#include "../kart/k_kart.h"
+
 tic_t firstticstosend; // Smallest netnode.tic
 tic_t tictoclear = 0; // Optimize D_ClearTiccmd
 ticcmd_t localcmds;
@@ -104,7 +107,8 @@ static void CheckTiccmdHacks(INT32 playernum, tic_t tic)
 {
 	ticcmd_t *cmd = &netcmds[tic%BACKUPTICS][playernum];
 	if (cmd->forwardmove > MAXPLMOVE || cmd->forwardmove < -MAXPLMOVE
-		|| cmd->sidemove > MAXPLMOVE || cmd->sidemove < -MAXPLMOVE)
+		|| cmd->sidemove > MAXPLMOVE || cmd->sidemove < -MAXPLMOVE
+		|| cmd->driftturn > KART_FULLTURN || cmd->driftturn < -KART_FULLTURN)
 	{
 		CONS_Alert(CONS_WARNING, M_GetText("Illegal movement value received from node %d\n"), playernum);
 		SendKick(playernum, KICK_MSG_CON_FAIL);

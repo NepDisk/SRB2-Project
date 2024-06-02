@@ -185,8 +185,8 @@ void G_ReadDemoTiccmd(ticcmd_t *cmd, INT32 playernum)
 	if (ziptic & ZT_BUTTONS)
 	{
 		oldcmd.buttons = (oldcmd.buttons & (BT_CAMLEFT|BT_CAMRIGHT)) | (READUINT16(demo_p) & ~(BT_CAMLEFT|BT_CAMRIGHT));
-		if (demoversion < 0x0012 && oldcmd.buttons & BT_SPIN)
-			oldcmd.buttons |= BT_SHIELD; // Copy BT_SPIN to BT_SHIELD for pre-Shield-button demos
+		if (demoversion < 0x0012 && oldcmd.buttons & BT_BRAKE)
+			oldcmd.buttons |= BT_SHIELD; // Copy BT_BRAKE to BT_SHIELD for pre-Shield-button demos
 	}
 	if (ziptic & ZT_AIMING)
 		oldcmd.aiming = READINT16(demo_p);

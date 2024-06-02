@@ -1179,8 +1179,8 @@ static void ST_drawInput(void)
 	V_DrawFill(x+16+(xoffs), y+(yoffs)-offs, 10, 10, col);\
 	V_DrawCharacter(x+16+1+(xoffs), y+1+(yoffs)-offs, hudinfo[HUD_INPUT].f|symb, false)
 
-	drawbutt( 4,-3, BT_JUMP,   'J' );
-	drawbutt(15,-3, BT_SPIN,   'S' );
+	drawbutt( 4,-3, BT_ACCELERATE,   'J' );
+	drawbutt(15,-3, BT_BRAKE,   'S' );
 	drawbutt(26,-3, BT_SHIELD, '\0'); // Instead of a wide 'J' or 'S', we'll draw a thin "SH" for Shield
 	V_DrawThinString(x+16+26, y+2+(-3)-offs, hudinfo[HUD_LIVES].f, "SH");
 

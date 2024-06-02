@@ -597,7 +597,7 @@ static int ScanConstants(lua_State *L, boolean mathlib, const char *word)
 	// TODO: 2.3: Delete these aliases
 	else if (fastcmp(word, "BT_USE"))
 	{
-		CacheAndPushConstant(L, word, (lua_Integer)BT_SPIN);
+		CacheAndPushConstant(L, word, (lua_Integer)BT_BRAKE);
 		return 1;
 	}
 	else if (fastcmp(word, "GC_WEPSLOT8") || fastcmp(word, "GC_WEPSLOT9") || fastcmp(word, "GC_WEPSLOT10"))

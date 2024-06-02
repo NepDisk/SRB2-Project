@@ -50,25 +50,25 @@ INT32 gamecontrolbisdefault[num_gamecontrolschemes][NUM_GAMECONTROLS][2];
 
 // lists of GC codes for selective operation
 const INT32 gcl_tutorial_check[num_gcl_tutorial_check] = {
-	GC_FORWARD, GC_BACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT,
+	GC_AIMFORWARD, GC_BACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT,
 	GC_TURNLEFT, GC_TURNRIGHT
 };
 
 const INT32 gcl_tutorial_used[num_gcl_tutorial_used] = {
-	GC_FORWARD, GC_BACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT,
+	GC_AIMFORWARD, GC_BACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT,
 	GC_TURNLEFT, GC_TURNRIGHT,
-	GC_JUMP, GC_SPIN
+	GC_ACCELERATE, GC_BRAKE
 };
 
 const INT32 gcl_tutorial_full[num_gcl_tutorial_full] = {
-	GC_FORWARD, GC_BACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT,
+	GC_AIMFORWARD, GC_BACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT,
 	GC_LOOKUP, GC_LOOKDOWN, GC_TURNLEFT, GC_TURNRIGHT, GC_CENTERVIEW,
-	GC_JUMP, GC_SPIN,
+	GC_ACCELERATE, GC_BRAKE,
 	GC_FIRE, GC_FIRENORMAL
 };
 
 const INT32 gcl_movement[num_gcl_movement] = {
-	GC_FORWARD, GC_BACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT
+	GC_AIMFORWARD, GC_BACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT
 };
 
 const INT32 gcl_camera[num_gcl_camera] = {
@@ -76,16 +76,16 @@ const INT32 gcl_camera[num_gcl_camera] = {
 };
 
 const INT32 gcl_movement_camera[num_gcl_movement_camera] = {
-	GC_FORWARD, GC_BACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT,
+	GC_AIMFORWARD, GC_BACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT,
 	GC_TURNLEFT, GC_TURNRIGHT
 };
 
-const INT32 gcl_jump[num_gcl_jump] = { GC_JUMP };
+const INT32 gcl_jump[num_gcl_jump] = { GC_ACCELERATE };
 
-const INT32 gcl_spin[num_gcl_spin] = { GC_SPIN };
+const INT32 gcl_spin[num_gcl_spin] = { GC_BRAKE };
 
 const INT32 gcl_jump_spin[num_gcl_jump_spin] = {
-	GC_JUMP, GC_SPIN
+	GC_ACCELERATE, GC_BRAKE
 };
 
 typedef struct
@@ -680,7 +680,7 @@ void G_DefineDefaultControls(void)
 	INT32 i;
 
 	// FPS game controls (WASD)
-	gamecontroldefault[gcs_fps][GC_FORWARD    ][0] = 'w';
+	gamecontroldefault[gcs_fps][GC_AIMFORWARD    ][0] = 'w';
 	gamecontroldefault[gcs_fps][GC_BACKWARD   ][0] = 's';
 	gamecontroldefault[gcs_fps][GC_STRAFELEFT ][0] = 'a';
 	gamecontroldefault[gcs_fps][GC_STRAFERIGHT][0] = 'd';
@@ -689,8 +689,8 @@ void G_DefineDefaultControls(void)
 	gamecontroldefault[gcs_fps][GC_TURNLEFT   ][0] = KEY_LEFTARROW;
 	gamecontroldefault[gcs_fps][GC_TURNRIGHT  ][0] = KEY_RIGHTARROW;
 	gamecontroldefault[gcs_fps][GC_CENTERVIEW ][0] = KEY_LCTRL;
-	gamecontroldefault[gcs_fps][GC_JUMP       ][0] = KEY_SPACE;
-	gamecontroldefault[gcs_fps][GC_SPIN       ][0] = KEY_LSHIFT;
+	gamecontroldefault[gcs_fps][GC_ACCELERATE       ][0] = KEY_SPACE;
+	gamecontroldefault[gcs_fps][GC_BRAKE       ][0] = KEY_LSHIFT;
 	gamecontroldefault[gcs_fps][GC_SHIELD     ][0] = KEY_LALT;
 	gamecontroldefault[gcs_fps][GC_FIRE       ][0] = KEY_RCTRL;
 	gamecontroldefault[gcs_fps][GC_FIRE       ][1] = KEY_MOUSE1+0;
@@ -701,7 +701,7 @@ void G_DefineDefaultControls(void)
 	gamecontroldefault[gcs_fps][GC_CUSTOM3    ][0] = 'c';
 
 	// Platform game controls (arrow keys), currently unused
-	gamecontroldefault[gcs_platform][GC_FORWARD    ][0] = KEY_UPARROW;
+	gamecontroldefault[gcs_platform][GC_AIMFORWARD    ][0] = KEY_UPARROW;
 	gamecontroldefault[gcs_platform][GC_BACKWARD   ][0] = KEY_DOWNARROW;
 	gamecontroldefault[gcs_platform][GC_STRAFELEFT ][0] = 'a';
 	gamecontroldefault[gcs_platform][GC_STRAFERIGHT][0] = 'd';
@@ -710,8 +710,8 @@ void G_DefineDefaultControls(void)
 	gamecontroldefault[gcs_platform][GC_TURNLEFT   ][0] = KEY_LEFTARROW;
 	gamecontroldefault[gcs_platform][GC_TURNRIGHT  ][0] = KEY_RIGHTARROW;
 	gamecontroldefault[gcs_platform][GC_CENTERVIEW ][0] = KEY_END;
-	gamecontroldefault[gcs_platform][GC_JUMP       ][0] = KEY_SPACE;
-	gamecontroldefault[gcs_platform][GC_SPIN       ][0] = KEY_LSHIFT;
+	gamecontroldefault[gcs_platform][GC_ACCELERATE       ][0] = KEY_SPACE;
+	gamecontroldefault[gcs_platform][GC_BRAKE       ][0] = KEY_LSHIFT;
 	gamecontroldefault[gcs_platform][GC_SHIELD     ][0] = KEY_LALT;
 	gamecontroldefault[gcs_platform][GC_FIRE       ][0] = 's';
 	gamecontroldefault[gcs_platform][GC_FIRE       ][1] = KEY_MOUSE1+0;
@@ -741,8 +741,8 @@ void G_DefineDefaultControls(void)
 		gamecontroldefault[i][GC_VIEWPOINTNEXT][0] = KEY_F12;
 
 		// Gamepad controls -- same for both schemes
-		gamecontroldefault[i][GC_JUMP         ][1] = KEY_JOY1+0; // A
-		gamecontroldefault[i][GC_SPIN         ][1] = KEY_JOY1+2; // X
+		gamecontroldefault[i][GC_ACCELERATE         ][1] = KEY_JOY1+0; // A
+		gamecontroldefault[i][GC_BRAKE         ][1] = KEY_JOY1+2; // X
 		gamecontroldefault[i][GC_SHIELD       ][1] = KEY_JOY1+1; // B
 		gamecontroldefault[i][GC_CUSTOM1      ][1] = KEY_JOY1+3; // Y
 		gamecontroldefault[i][GC_CUSTOM2      ][1] = KEY_JOY1+4; // LB
@@ -757,8 +757,8 @@ void G_DefineDefaultControls(void)
 		gamecontroldefault[i][GC_WEAPONNEXT   ][1] = KEY_HAT1+3; // D-Pad Right
 
 		// Second player controls only have joypad defaults
-		gamecontrolbisdefault[i][GC_JUMP         ][1] = KEY_2JOY1+0; // A
-		gamecontrolbisdefault[i][GC_SPIN         ][1] = KEY_2JOY1+2; // X
+		gamecontrolbisdefault[i][GC_ACCELERATE         ][1] = KEY_2JOY1+0; // A
+		gamecontrolbisdefault[i][GC_BRAKE         ][1] = KEY_2JOY1+2; // X
 		gamecontrolbisdefault[i][GC_SHIELD       ][1] = KEY_2JOY1+1; // B
 		gamecontrolbisdefault[i][GC_CUSTOM1      ][1] = KEY_2JOY1+3; // Y
 		gamecontrolbisdefault[i][GC_CUSTOM2      ][1] = KEY_2JOY1+4; // LB
@@ -893,7 +893,7 @@ static INT32 G_FilterKeyByVersion(INT32 numctrl, INT32 keyidx, INT32 player, INT
 
 	if (GETMAJOREXECVERSION(cv_execversion.value) < 27 && ( // v2.1.22
 		numctrl == GC_WEAPONNEXT || numctrl == GC_WEAPONPREV || numctrl == GC_TOSSFLAG ||
-		numctrl == GC_SPIN || numctrl == GC_CAMRESET || numctrl == GC_JUMP ||
+		numctrl == GC_BRAKE || numctrl == GC_CAMRESET || numctrl == GC_ACCELERATE ||
 		numctrl == GC_PAUSE || numctrl == GC_SYSTEMMENU || numctrl == GC_CAMTOGGLE ||
 		numctrl == GC_SCREENSHOT || numctrl == GC_TALKKEY || numctrl == GC_SCORES ||
 		numctrl == GC_CENTERVIEW

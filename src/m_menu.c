@@ -1071,12 +1071,12 @@ static menuitem_t OP_ChangeControlsMenu[] =
 {
 	{IT_HEADER, NULL, "Movement", NULL, 0},
 	{IT_SPACE, NULL, NULL, NULL, 0}, // padding
-	{IT_CALL | IT_STRING2, NULL, "Move Forward",     M_ChangeControl, GC_FORWARD     },
+	{IT_CALL | IT_STRING2, NULL, "Move Forward",     M_ChangeControl, GC_AIMFORWARD     },
 	{IT_CALL | IT_STRING2, NULL, "Move Backward",    M_ChangeControl, GC_BACKWARD    },
 	{IT_CALL | IT_STRING2, NULL, "Move Left",        M_ChangeControl, GC_STRAFELEFT  },
 	{IT_CALL | IT_STRING2, NULL, "Move Right",       M_ChangeControl, GC_STRAFERIGHT },
-	{IT_CALL | IT_STRING2, NULL, "Jump",             M_ChangeControl, GC_JUMP        },
-	{IT_CALL | IT_STRING2, NULL, "Spin",             M_ChangeControl, GC_SPIN        },
+	{IT_CALL | IT_STRING2, NULL, "Jump",             M_ChangeControl, GC_ACCELERATE        },
+	{IT_CALL | IT_STRING2, NULL, "Spin",             M_ChangeControl, GC_BRAKE        },
 	{IT_CALL | IT_STRING2, NULL, "Shield Ability",   M_ChangeControl, GC_SHIELD      },
 	{IT_HEADER, NULL, "Camera", NULL, 0},
 	{IT_SPACE, NULL, NULL, NULL, 0}, // padding

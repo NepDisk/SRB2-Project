@@ -35,11 +35,11 @@ typedef enum
 	BT_WEAPONPREV = 1<<5,  // select previous weapon
 
 	BT_ATTACK     = 1<<6,  // shoot rings
-	BT_SPIN       = 1<<7,  // spin action
+	BT_BRAKE       = 1<<7,  // spin action
 	BT_CAMLEFT    = 1<<8,  // turn camera left
 	BT_CAMRIGHT   = 1<<9,  // turn camera right
 	BT_TOSSFLAG   = 1<<10, // toss flag or emeralds
-	BT_JUMP       = 1<<11, // jump action
+	BT_ACCELERATE       = 1<<11, // jump action
 	BT_FIRENORMAL = 1<<12, // fire a normal ring no matter what
 	
 	// custom lua buttons
@@ -68,6 +68,7 @@ typedef struct
 	INT16 angleturn; // <<16 for angle delta - saved as 1 byte into demos
 	INT16 aiming; // vertical aiming, see G_BuildTicCmd
 	UINT16 buttons;
+	INT16 driftturn; // SRB2Kart: Used for getting drift turn speed
 	UINT8 latency; // Netgames: how many tics ago was this ticcmd generated from this player's end?
 } ATTRPACK ticcmd_t;
 

@@ -50,6 +50,9 @@
 #include "g_input.h"
 #include "simple_hashmap.h"
 
+// shart
+#include "kart/k_kart.h"
+
 #ifdef HW3SOUND
 #include "hardware/hw3sound.h"
 #endif
@@ -2402,7 +2405,7 @@ boolean P_PlayerHitFloor(player_t *player, boolean dorollstuff)
 		if (dorollstuff)
 		{
 			if ((player->charability2 == CA2_SPINDASH) && !((player->pflags & (PF_SPINNING|PF_THOKKED)) == PF_THOKKED) && !(player->charability == CA_THOK && player->secondjump)
-			&& (player->cmd.buttons & BT_SPIN) && (FixedHypot(player->mo->momx, player->mo->momy) > (5*player->mo->scale)))
+			&& (player->cmd.buttons & BT_BRAKE) && (FixedHypot(player->mo->momx, player->mo->momy) > (5*player->mo->scale)))
 				player->pflags = (player->pflags|PF_SPINNING) & ~PF_THOKKED;
 			else if (!(player->pflags & PF_STARTDASH))
 				player->pflags &= ~PF_SPINNING;
@@ -2468,7 +2471,7 @@ boolean P_PlayerHitFloor(player_t *player, boolean dorollstuff)
 				}
 			}
 			else if (player->charability2 == CA2_MELEE
-				&& ((player->panim == PA_ABILITY2) || (player->charability == CA_TWINSPIN && player->panim == PA_ABILITY && player->cmd.buttons & (BT_JUMP|BT_SPIN))))
+				&& ((player->panim == PA_ABILITY2) || (player->charability == CA_TWINSPIN && player->panim == PA_ABILITY && player->cmd.buttons & (BT_ACCELERATE|BT_BRAKE))))
 			{
 				if (!P_IsPlayerInState(player, S_PLAY_MELEE_LANDING))
 				{
@@ -2691,7 +2694,7 @@ static boolean P_PlayerCanBust(player_t *player, ffloor_t *rover)
 	{
 	case BT_TOUCH: // Shatters on contact
 		return true;
-	case BT_SPINBUST: // Can be busted by spinning (either from jumping or spindashing)
+	case BT_BRAKEBUST: // Can be busted by spinning (either from jumping or spindashing)
 		if ((player->pflags & PF_SPINNING) && !(player->pflags & PF_STARTDASH))
 			return true;
 
@@ -2813,7 +2816,7 @@ static void P_CheckBustableBlocks(player_t *player)
 						continue;
 
 					break;
-				case BT_SPINBUST:
+				case BT_BRAKEBUST:
 					if (player->mo->z + player->mo->momz > topheight)
 						continue;
 
@@ -2833,7 +2836,7 @@ static void P_CheckBustableBlocks(player_t *player)
 			}
 
 			// Impede the player's fall a bit
-			if (((rover->busttype == BT_TOUCH) || (rover->busttype == BT_SPINBUST)) && player->mo->z >= topheight)
+			if (((rover->busttype == BT_TOUCH) || (rover->busttype == BT_BRAKEBUST)) && player->mo->z >= topheight)
 				player->mo->momz >>= 1;
 			else if (rover->busttype == BT_TOUCH)
 			{
@@ -3771,7 +3774,7 @@ static void P_DoClimbing(player_t *player)
 	else if ((!(player->mo->momx || player->mo->momy || player->mo->momz) || !climb) && !P_IsPlayerInState(player, S_PLAY_CLING))
 		P_SetMobjState(player->mo, S_PLAY_CLING);
 
-	if (cmd->buttons & BT_SPIN && !(player->pflags & PF_JUMPSTASIS))
+	if (cmd->buttons & BT_BRAKE && !(player->pflags & PF_JUMPSTASIS))
 	{
 		player->climbing = 0;
 		player->pflags |= P_GetJumpFlags(player);
@@ -4719,7 +4722,7 @@ static void P_DoSpinAbility(player_t *player, ticcmd_t *cmd)
 		&& (player->pflags & PF_JUMPSTASIS || !P_IsPlayerInState(player, S_PLAY_GLIDE_LANDING)))
 		return;
 
-	if (cmd->buttons & BT_SPIN)
+	if (cmd->buttons & BT_BRAKE)
 	{
 		if (LUA_HookPlayer(player, HOOK(SpinSpecial)))
 			return;
@@ -4736,7 +4739,7 @@ static void P_DoSpinAbility(player_t *player, ticcmd_t *cmd)
 		{
 			case CA2_SPINDASH: // Spinning and Spindashing
 				 // Start revving
-				if ((cmd->buttons & BT_SPIN) && (player->speed < FixedMul(5<<FRACBITS, player->mo->scale) || P_IsPlayerInState(player, S_PLAY_GLIDE_LANDING))
+				if ((cmd->buttons & BT_BRAKE) && (player->speed < FixedMul(5<<FRACBITS, player->mo->scale) || P_IsPlayerInState(player, S_PLAY_GLIDE_LANDING))
 					&& !player->mo->momz && onground && !(player->pflags & (PF_SPINDOWN|PF_SPINNING))
 						&& canstand)
 				{
@@ -4749,7 +4752,7 @@ static void P_DoSpinAbility(player_t *player, ticcmd_t *cmd)
 						S_StartSound(player->mo, sfx_spndsh); // Make the rev sound!
 				}
 				 // Revving
-				else if ((cmd->buttons & BT_SPIN) && (player->pflags & PF_STARTDASH))
+				else if ((cmd->buttons & BT_BRAKE) && (player->pflags & PF_STARTDASH))
 				{
 					if (player->speed > 5*player->mo->scale)
 					{
@@ -4782,7 +4785,7 @@ static void P_DoSpinAbility(player_t *player, ticcmd_t *cmd)
 				// If not moving up or down, and travelling faster than a speed of five while not holding
 				// down the spin button and not spinning.
 				// AKA Just go into a spin on the ground, you idiot. ;)
-				else if ((cmd->buttons & BT_SPIN || ((twodlevel || (player->mo->flags2 & MF2_TWOD)) && cmd->forwardmove < -20))
+				else if ((cmd->buttons & BT_BRAKE || ((twodlevel || (player->mo->flags2 & MF2_TWOD)) && cmd->forwardmove < -20))
 					&& !player->climbing && !player->mo->momz && onground && (player->speed > FixedMul(5<<FRACBITS, player->mo->scale)
 						|| !canstand) && !(player->pflags & (PF_SPINDOWN|PF_SPINNING)))
 				{
@@ -4837,7 +4840,7 @@ static void P_DoSpinAbility(player_t *player, ticcmd_t *cmd)
 								visual->drawonlyforplayer = player; // Hide it from the other player in splitscreen, and yourself when spectating
 							}
 						}
-						if ((cmd->buttons & BT_SPIN) && !(player->pflags & PF_SPINDOWN))
+						if ((cmd->buttons & BT_BRAKE) && !(player->pflags & PF_SPINDOWN))
 						{
 							mobj_t *bullet;
 
@@ -4873,7 +4876,7 @@ static void P_DoSpinAbility(player_t *player, ticcmd_t *cmd)
 				}
 				break;
 			case CA2_MELEE: // Melee attack
-				if (player->panim != PA_ABILITY2 && (cmd->buttons & BT_SPIN)
+				if (player->panim != PA_ABILITY2 && (cmd->buttons & BT_BRAKE)
 				&& !player->mo->momz && onground && !(player->pflags & PF_SPINDOWN)
 				&& canstand)
 				{
@@ -5329,7 +5332,7 @@ static void P_DoJumpStuff(player_t *player, ticcmd_t *cmd, boolean spinshieldhac
 			;
 		else if (P_PlayerShieldThink(player, cmd, lockonthok, visual))
 			;
-		else if (cmd->buttons & BT_SPIN)
+		else if (cmd->buttons & BT_BRAKE)
 		{
 			if (spinshieldhack && !(player->pflags & PF_SPINDOWN) && P_SuperReady(player, true)
 			&& !player->powers[pw_invulnerability] && !(player->powers[pw_shield] & SH_NOSTACK)) // These two checks are no longer in P_SuperReady
@@ -5383,7 +5386,7 @@ static void P_DoJumpStuff(player_t *player, ticcmd_t *cmd, boolean spinshieldhac
 	{
 		if (player->pflags & PF_JUMPED)
 		{
-			if (cmd->buttons & BT_SPIN && player->secondjump < 42) // speed up falling down
+			if (cmd->buttons & BT_BRAKE && player->secondjump < 42) // speed up falling down
 				player->secondjump++;
 
 			if (player->flyangle > 0 && player->pflags & PF_THOKKED)
@@ -5409,7 +5412,7 @@ static void P_DoJumpStuff(player_t *player, ticcmd_t *cmd, boolean spinshieldhac
 	// ABILITIES!//
 	///////////////
 
-	if (cmd->buttons & BT_JUMP && !player->exiting && !P_PlayerInPain(player))
+	if (cmd->buttons & BT_ACCELERATE && !player->exiting && !P_PlayerInPain(player))
 	{
 		if (LUA_HookPlayer(player, HOOK(JumpSpecial)))
 			;
@@ -5722,7 +5725,7 @@ static void P_DoJumpStuff(player_t *player, ticcmd_t *cmd, boolean spinshieldhac
 	else
 		player->homing = 0;
 
-	if (cmd->buttons & BT_JUMP)
+	if (cmd->buttons & BT_ACCELERATE)
 	{
 		player->pflags |= PF_JUMPDOWN;
 
@@ -6104,180 +6107,53 @@ static void P_3dMovement(player_t *player)
 		cmd->forwardmove = 0;
 	else if (onground && P_IsPlayerInState(player, S_PLAY_PAIN))
 		P_SetMobjState(player->mo, S_PLAY_WALK);
+	
+	// Do not let the player control movement if not onground.
+	// SRB2Kart: pogo spring and speed bumps are supposed to control like you're on the ground
+	onground = (P_IsObjectOnGround(player->mo) /*|| (player->kartstuff[k_pogospring])*/);
 
 	player->aiming = cmd->aiming<<FRACBITS;
 
-	// Set the player speeds.
-	if (player->pflags & PF_SLIDING)
-	{
-		normalspd = FixedMul(36<<FRACBITS, player->mo->scale);
-		thrustfactor = 5;
-		acceleration = 96 + (FixedDiv(player->speed, player->mo->scale)>>FRACBITS) * 40;
-		topspeed = normalspd;
-	}
-	else
-	{
-		if (player->powers[pw_super] || player->powers[pw_sneakers])
-		{
-			topspeed = 5 * normalspd / 3; // 1.67x
-			thrustfactor = player->thrustfactor*2;
-			acceleration = player->accelstart/2 + (FixedDiv(player->speed, player->mo->scale)>>FRACBITS) * player->acceleration/2;
-		}
-		else
-		{
-			topspeed = normalspd;
-			thrustfactor = player->thrustfactor;
-			acceleration = player->accelstart + (FixedDiv(player->speed, player->mo->scale)>>FRACBITS) * player->acceleration;
-		}
-
-		if (player->powers[pw_tailsfly])
-			topspeed >>= 1;
-		else if (player->mo->eflags & (MFE_UNDERWATER|MFE_GOOWATER))
-		{
-			topspeed >>= 1;
-			acceleration = 2*acceleration/3;
-		}
-	}
-
-	if (spin) // Prevent gaining speed whilst rolling!
-	{
-		const fixed_t ns = FixedDiv(549*ORIG_FRICTION,500*FRACUNIT); // P_XYFriction
-		topspeed = FixedMul(oldMagnitude, ns);
-	}
-
-	// Better maneuverability while flying
-	if (player->powers[pw_tailsfly])
-	{
-		thrustfactor = player->thrustfactor*2;
-		acceleration = player->accelstart + (FixedDiv(player->speed, player->mo->scale)>>FRACBITS) * player->acceleration;
-	}
-	else
-	{
-		if (player->pflags & PF_BOUNCING)
-		{
-			if (P_IsPlayerInState(player, S_PLAY_BOUNCE_LANDING))
-			{
-				thrustfactor = player->thrustfactor*8;
-				acceleration = player->accelstart/8 + (FixedDiv(player->speed, player->mo->scale)>>FRACBITS) * player->acceleration/8;
-			}
-			else
-			{
-				thrustfactor = (3*player->thrustfactor)/4;
-				acceleration = player->accelstart + (FixedDiv(player->speed, player->mo->scale)>>FRACBITS) * player->acceleration;
-			}
-		}
-
-		if (player->mo->movefactor != FRACUNIT) // Friction-scaled acceleration...
-			acceleration = FixedMul(acceleration<<FRACBITS, player->mo->movefactor)>>FRACBITS;
-	}
-
 	// Forward movement
-	if (player->climbing)
+	if (!((player->exiting /*|| mapreset*/) || (P_PlayerInPain(player) && !onground)))
 	{
-		if (cmd->forwardmove)
-		{
-			if (player->mo->eflags & MFE_UNDERWATER)
-				P_SetObjectMomZ(player->mo, FixedDiv(cmd->forwardmove*FRACUNIT, player->powers[pw_super] ? 20*FRACUNIT/3 : 10*FRACUNIT), false); // 2/3 while super
-			else
-				P_SetObjectMomZ(player->mo, FixedDiv(cmd->forwardmove*FRACUNIT, player->powers[pw_super] ? 5*FRACUNIT : 15*FRACUNIT>>1), false); // 2/3 while super
-		}
-	}
-	else if (!(controlstyle == CS_LMAOGALOG)
-		&& cmd->forwardmove != 0 && !(player->pflags & PF_GLIDING || player->exiting
-		|| (P_PlayerInPain(player) && !onground)))
-	{
-		movepushforward = cmd->forwardmove * (thrustfactor * acceleration);
+		//movepushforward = cmd->forwardmove * (thrustfactor * acceleration);
+		movepushforward = K_3dKartMovement(player, onground, cmd->forwardmove);
 
-		// Allow a bit of movement while spinning
-		if ((player->pflags & (PF_SPINNING|PF_THOKKED)) == PF_SPINNING)
-		{
-			if ((mforward && cmd->forwardmove > 0) || (mbackward && cmd->forwardmove < 0)
-			|| (player->pflags & PF_STARTDASH))
-				movepushforward = 0;
-			else if (onground)
-				movepushforward >>= 4;
-			else
-				movepushforward >>= 3;
-		}
 		// allow very small movement while in air for gameplay
-		else if (!onground)
+		if (!onground)
 			movepushforward >>= 2; // proper air movement
 
-		movepushforward = FixedMul(movepushforward, player->mo->scale);
+		if (player->mo->movefactor != FRACUNIT) // Friction-scaled acceleration...
+			movepushforward = FixedMul(movepushforward, player->mo->movefactor);
+
+		if (cmd->buttons & BT_BRAKE && !cmd->forwardmove) // SRB2kart - braking isn't instant
+			movepushforward /= 64;
+
+		if (cmd->forwardmove > 0)
+			player->kartstuff[k_brakestop] = 0;
+		else if (player->kartstuff[k_brakestop] < 6) // Don't start reversing with brakes until you've made a stop first
+		{
+			if (player->speed < 8*FRACUNIT)
+				player->kartstuff[k_brakestop]++;
+			movepushforward = 0;
+		}
 
 		totalthrust.x += P_ReturnThrustX(player->mo, movepushangle, movepushforward);
 		totalthrust.y += P_ReturnThrustY(player->mo, movepushangle, movepushforward);
 	}
+	/*else if (!(player->kartstuff[k_spinouttimer]))
+	{
+		K_MomentumToFacing(player);
+	}*/
+
 	// Sideways movement
-	if (player->climbing)
+	if (cmd->sidemove != 0 && !((player->exiting /*|| mapreset*/) || player->kartstuff[k_spinouttimer]))
 	{
-		if (player->mo->eflags & MFE_UNDERWATER)
-			P_InstaThrust(player->mo, player->mo->angle-ANGLE_90, FixedDiv(cmd->sidemove*player->mo->scale, player->powers[pw_super] ? 20*FRACUNIT/3 : 10*FRACUNIT)); // 2/3 while super
+		if (cmd->sidemove > 0)
+			movepushside = (cmd->sidemove * FRACUNIT/128) + FixedDiv(player->speed, K_GetKartSpeed(player, true));
 		else
-			P_InstaThrust(player->mo, player->mo->angle-ANGLE_90, FixedDiv(cmd->sidemove*player->mo->scale, player->powers[pw_super] ? 5*FRACUNIT : 15*FRACUNIT>>1)); // 2/3 while super
-	}
-	// Analog movement control
-	else if (controlstyle == CS_LMAOGALOG)
-	{
-		if (!(player->pflags & PF_GLIDING || player->exiting || P_PlayerInPain(player)))
-		{
-			angle_t controldirection;
-
-			// Calculate the angle at which the controls are pointing
-			// to figure out the proper mforward and mbackward.
-			// (Why was it so complicated before? ~Red)
-			controldirection = R_PointToAngle2(0, 0, cmd->forwardmove*FRACUNIT, -cmd->sidemove*FRACUNIT)+movepushangle;
-
-			movepushforward = FixedHypot(cmd->sidemove, cmd->forwardmove) * (thrustfactor * acceleration);
-
-			// Allow a bit of movement while spinning
-			if ((player->pflags & (PF_SPINNING|PF_THOKKED)) == PF_SPINNING)
-			{
-				if ((mforward && cmd->forwardmove > 0) || (mbackward && cmd->forwardmove < 0)
-				|| (player->pflags & PF_STARTDASH))
-					movepushforward = 0;
-				else if (onground)
-					movepushforward >>= 4;
-				else
-					movepushforward >>= 3;
-			}
-			// allow very small movement while in air for gameplay
-			else if (!onground)
-				movepushforward >>= 2; // proper air movement
-
-			movepushsideangle = controldirection;
-
-			movepushforward = FixedMul(movepushforward, player->mo->scale);
-
-			totalthrust.x += P_ReturnThrustX(player->mo, controldirection, movepushforward);
-			totalthrust.y += P_ReturnThrustY(player->mo, controldirection, movepushforward);
-		}
-	}
-	else if (cmd->sidemove && !(player->pflags & PF_GLIDING) && !player->exiting && !P_PlayerInPain(player))
-	{
-		movepushside = cmd->sidemove * (thrustfactor * acceleration);
-
-		// allow very small movement while in air for gameplay
-		if (!onground)
-		{
-			movepushside >>= 2; // proper air movement
-			// Reduce movepushslide even more if over "max" flight speed
-			if (((player->pflags & (PF_SPINNING|PF_THOKKED)) == PF_SPINNING) || (player->powers[pw_tailsfly] && player->speed > topspeed))
-				movepushside >>= 2;
-		}
-		// Allow a bit of movement while spinning
-		else if ((player->pflags & (PF_SPINNING|PF_THOKKED)) == PF_SPINNING)
-		{
-			if (player->pflags & PF_STARTDASH)
-				movepushside = 0;
-			else if (onground)
-				movepushside >>= 4;
-			else
-				movepushside >>= 3;
-		}
-
-		// Finally move the player now that their speed/direction has been decided.
-		movepushside = FixedMul(movepushside, player->mo->scale);
+			movepushside = (cmd->sidemove * FRACUNIT/128) - FixedDiv(player->speed, K_GetKartSpeed(player, true));
 
 		totalthrust.x += P_ReturnThrustX(player->mo, movepushsideangle, movepushside);
 		totalthrust.y += P_ReturnThrustY(player->mo, movepushsideangle, movepushside);
@@ -6354,9 +6230,9 @@ static void P_SpectatorMovement(player_t *player)
 	if (!(cmd->angleturn & TICCMD_RECEIVED))
 		ticmiss++;
 
-	if (cmd->buttons & BT_JUMP)
+	if (cmd->buttons & BT_ACCELERATE)
 		player->mo->z += FRACUNIT*16;
-	else if (cmd->buttons & BT_SPIN)
+	else if (cmd->buttons & BT_BRAKE)
 		player->mo->z -= FRACUNIT*16;
 
 	if (player->mo->z > player->mo->ceilingz - player->mo->height)
@@ -7221,7 +7097,7 @@ static void P_NiGHTSMovement(player_t *player)
 	if (player->drilldelay)
 		player->drilldelay--;
 
-	if (!(cmd->buttons & BT_JUMP))
+	if (!(cmd->buttons & BT_ACCELERATE))
 	{
 		// Always have just a TINY bit of drill power.
 		if (player->drillmeter <= 0)
@@ -7469,7 +7345,7 @@ static void P_NiGHTSMovement(player_t *player)
 		player->pflags |= (PF_STARTJUMP|PF_DRILLING);
 		newangle = (INT16)player->flyangle;
 	}
-	else if (cmd->buttons & BT_JUMP && player->drillmeter && player->drilldelay == 0)
+	else if (cmd->buttons & BT_ACCELERATE && player->drillmeter && player->drilldelay == 0)
 	{
 		if (!(player->pflags & PF_STARTJUMP))
 			firstdrill = true;
@@ -7583,7 +7459,7 @@ static void P_NiGHTSMovement(player_t *player)
 	// No more bumper braking
 	if (!player->bumpertime
 	 && ((cmd->buttons & (BT_CAMLEFT|BT_CAMRIGHT)) == (BT_CAMLEFT|BT_CAMRIGHT)
-	  || (cmd->buttons & BT_SPIN)))
+	  || (cmd->buttons & BT_BRAKE)))
 	{
 		if (!(player->pflags & PF_STARTDASH))
 			S_StartSound(player->mo, sfx_ngskid);
@@ -8017,7 +7893,7 @@ static void P_SkidStuff(player_t *player)
 			P_SetMobjState(player->mo, S_PLAY_FALL);
 		}
 		// Get up and brush yourself off, idiot.
-		else if (player->glidetime > 15 || !(player->cmd.buttons & BT_JUMP))
+		else if (player->glidetime > 15 || !(player->cmd.buttons & BT_ACCELERATE))
 		{
 			P_ResetPlayer(player);
 			P_SetMobjState(player->mo, S_PLAY_GLIDE_LANDING);
@@ -8087,7 +7963,12 @@ void P_MovePlayer(player_t *player)
 	INT32 i;
 	boolean spinshieldhack = false; // Hack: Is Spin and Shield bound to the same button (pressed on the same tic)?
 
+	if (countdowntimeup)
+		return;
+	
 	fixed_t runspd;
+	
+	runspd = 14*player->mo->scale; //srb2kart
 
 	if (P_IsPlayerInSuperTransformationState(player))
 	{
@@ -8246,49 +8127,19 @@ void P_MovePlayer(player_t *player)
 	// MOVEMENT CODE	//
 	//////////////////////
 
-	if (twodlevel || player->mo->flags2 & MF2_TWOD) // 2d-level, so special control applies.
-		P_2dMovement(player);
-	else
-	{
-		if (!player->climbing)
-		{
-			switch (P_ControlStyle(player))
-			{
-			case CS_LEGACY:
-			case CS_STANDARD:
-				player->mo->angle = (cmd->angleturn<<16 /* not FRACBITS */);
-				break;
+	//Put turncode here - Nep
+	
 
-			case CS_LMAOGALOG:
-				break; // handled elsewhere
+	ticruned++;
+	if ((cmd->angleturn & TICCMD_RECEIVED) == 0)
+		ticmiss++;
 
-			case CS_SIMPLE:
-				if (cmd->forwardmove || cmd->sidemove)
-				{
-					angle_t controlangle = R_PointToAngle2(0, 0, cmd->forwardmove << FRACBITS, -cmd->sidemove << FRACBITS);
-					player->mo->angle = (cmd->angleturn<<16 /* not FRACBITS */) + controlangle;
-				}
-				else
-				{
-					angle_t drawangleoffset = (player->powers[pw_carry] == CR_ROLLOUT) ? ANGLE_180 : 0;
-					player->mo->angle = player->drawangle + drawangleoffset;
-				}
-
-				break;
-			}
-		}
-
-		ticruned++;
-		if ((cmd->angleturn & TICCMD_RECEIVED) == 0)
-			ticmiss++;
-
-		P_3dMovement(player);
-	}
+	P_3dMovement(player);
 
 	if (maptol & TOL_2D)
 		runspd = FixedMul(runspd, 2*FRACUNIT/3);
 
-	P_SkidStuff(player);
+	//P_SkidStuff(player);
 
 	/////////////////////////
 	// MOVEMENT ANIMATIONS //
@@ -8626,7 +8477,7 @@ void P_MovePlayer(player_t *player)
 			if (player->charflags & SF_MULTIABILITY)
 			{
 				// Adventure-style flying by just holding the button down
-				if (cmd->buttons & BT_JUMP && !(player->pflags & PF_STASIS) && !player->exiting)
+				if (cmd->buttons & BT_ACCELERATE && !(player->pflags & PF_STASIS) && !player->exiting)
 					P_SetObjectMomZ(player->mo, actionspd/4, true);
 			}
 			else
@@ -8652,7 +8503,7 @@ void P_MovePlayer(player_t *player)
 				S_StartSound(player->mo, sfx_putput);
 
 			// Descend
-			if (cmd->buttons & BT_SPIN && !(player->pflags & PF_STASIS) && !player->exiting && !(player->mo->eflags & MFE_GOOWATER))
+			if (cmd->buttons & BT_BRAKE && !(player->pflags & PF_STASIS) && !player->exiting && !(player->mo->eflags & MFE_GOOWATER))
 				if (P_MobjFlip(player->mo)*player->mo->momz > -FixedMul(5*actionspd, player->mo->scale))
 				{
 					if (player->fly1 > 2)
@@ -8707,7 +8558,7 @@ void P_MovePlayer(player_t *player)
 	&& !(player->mo->eflags & (MFE_UNDERWATER|MFE_TOUCHWATER)))
 		P_ElementalFire(player, false);
 
-	if ((cmd->buttons & (BT_SPIN|BT_SHIELD)) == (BT_SPIN|BT_SHIELD) && !(player->pflags & (PF_SPINDOWN|PF_SHIELDDOWN)))
+	if ((cmd->buttons & (BT_BRAKE|BT_SHIELD)) == (BT_BRAKE|BT_SHIELD) && !(player->pflags & (PF_SPINDOWN|PF_SHIELDDOWN)))
 		spinshieldhack = true; // Spin and Shield is bound to the same button (pressed on the same tic), so enable two-button play (Jump and Spin+Shield)
 
 	P_DoSpinAbility(player, cmd);
@@ -9031,7 +8882,7 @@ static void P_DoRopeHang(player_t *player)
 	player->mo->momy = FixedMul(FixedDiv(player->mo->tracer->y - player->mo->y, dist), (speed));
 	player->mo->momz = FixedMul(FixedDiv(player->mo->tracer->z - playerz, dist), (speed));
 
-	if (player->cmd.buttons & BT_SPIN && !(player->pflags & PF_STASIS)) // Drop off of the rope
+	if (player->cmd.buttons & BT_BRAKE && !(player->pflags & PF_STASIS)) // Drop off of the rope
 	{
 		player->pflags |= (P_GetJumpFlags(player)|PF_SPINDOWN);
 		P_SetMobjState(player->mo, S_PLAY_JUMP);
@@ -9683,7 +9534,7 @@ static void P_DeathThink(player_t *player)
 	// continue logic
 	if (!(netgame || multiplayer) && player->lives <= 0 && player == &players[consoleplayer]) //Extra players in SP can't be allowed to continue or end game
 	{
-		if (player->deadtimer > (3*TICRATE) && (cmd->buttons & BT_SPIN || cmd->buttons & BT_JUMP) && (!continuesInSession || player->continues > 0))
+		if (player->deadtimer > (3*TICRATE) && (cmd->buttons & BT_BRAKE || cmd->buttons & BT_ACCELERATE) && (!continuesInSession || player->continues > 0))
 			G_UseContinue();
 		else if (player->deadtimer >= gameovertics)
 			G_UseContinue(); // Even if we don't have one this handles ending the game
@@ -9712,7 +9563,7 @@ static void P_DeathThink(player_t *player)
 		if (G_GametypeUsesCoopStarposts() && (netgame || multiplayer) && cv_coopstarposts.value == 2)
 		{
 			P_ConsiderAllGone();
-			if ((player->deadtimer > TICRATE<<1) || ((cmd->buttons & BT_JUMP) && (player->deadtimer > TICRATE)))
+			if ((player->deadtimer > TICRATE<<1) || ((cmd->buttons & BT_ACCELERATE) && (player->deadtimer > TICRATE)))
 			{
 				//player->spectator = true;
 				player->outofcoop = true;
@@ -9722,7 +9573,7 @@ static void P_DeathThink(player_t *player)
 		else
 		{
 			// Respawn with jump button, force respawn time (3 second default, cheat protected) in shooter modes.
-			if (cmd->buttons & BT_JUMP)
+			if (cmd->buttons & BT_ACCELERATE)
 			{
 				// You're a spectator, so respawn right away.
 				if ((gametyperules & GTR_SPECTATORS) && player->spectator)
@@ -9775,7 +9626,7 @@ static void P_DeathThink(player_t *player)
 		//else if (G_CoopGametype()) -- moved to G_DoReborn
 	}
 
-	if (G_CoopGametype() && (multiplayer || netgame) && (player->lives <= 0) && (player->deadtimer >= 8*TICRATE || ((cmd->buttons & BT_JUMP) && (player->deadtimer > TICRATE))))
+	if (G_CoopGametype() && (multiplayer || netgame) && (player->lives <= 0) && (player->deadtimer >= 8*TICRATE || ((cmd->buttons & BT_ACCELERATE) && (player->deadtimer > TICRATE))))
 	{
 		//player->spectator = true;
 		player->outofcoop = true;
@@ -11111,7 +10962,7 @@ static void P_MinecartThink(player_t *player)
 	}
 
 	// Player holding jump?
-	if (!(player->cmd.buttons & BT_JUMP))
+	if (!(player->cmd.buttons & BT_ACCELERATE))
 		player->pflags &= ~PF_JUMPDOWN;
 
 	// Handle segments.
@@ -11210,11 +11061,11 @@ static void P_MinecartThink(player_t *player)
 			else if (detright && player->cmd.sidemove > 0)
 				sidelock = detright;
 
-			//if (player->cmd.buttons & BT_SPIN && currentSpeed > 4*FRACUNIT)
+			//if (player->cmd.buttons & BT_BRAKE && currentSpeed > 4*FRACUNIT)
 			//	currentSpeed -= FRACUNIT/8;
 
 			// Jumping
-			if (sidelock || ((player->cmd.buttons & BT_JUMP) && !(player->pflags & PF_JUMPDOWN)))
+			if (sidelock || ((player->cmd.buttons & BT_ACCELERATE) && !(player->pflags & PF_JUMPDOWN)))
 			{
 				player->pflags |= PF_JUMPDOWN;
 
@@ -11975,7 +11826,7 @@ void P_PlayerThink(player_t *player)
 
 	if ((gametyperules & GTR_RACE) && leveltime < 4*TICRATE)
 	{
-		cmd->buttons &= BT_SPIN; // Remove all buttons except BT_SPIN
+		cmd->buttons &= BT_BRAKE; // Remove all buttons except BT_BRAKE
 		cmd->forwardmove = 0;
 		cmd->sidemove = 0;
 	}
@@ -12338,7 +12189,7 @@ void P_PlayerThink(player_t *player)
 	// check for use
 	if (player->powers[pw_carry] != CR_NIGHTSMODE)
 	{
-		if (cmd->buttons & BT_SPIN)
+		if (cmd->buttons & BT_BRAKE)
 			player->pflags |= PF_SPINDOWN;
 		else
 			player->pflags &= ~PF_SPINDOWN;
@@ -12573,6 +12424,8 @@ void P_PlayerThink(player_t *player)
 		dashmode = 0;
 	}
 #undef dashmode
+
+	K_KartPlayerThink(player, cmd); // SRB2kart
 
 	LUA_HookPlayer(player, HOOK(PlayerThink));
 

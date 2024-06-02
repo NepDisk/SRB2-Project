@@ -422,7 +422,7 @@ boolean P_DoSpring(mobj_t *spring, mobj_t *object)
 		if ((spring->info->painchance == 3))
 		{
 			if (!(pflags = (object->player->pflags & PF_SPINNING)) &&
-				(((object->player->charability2 == CA2_SPINDASH) && (object->player->cmd.buttons & BT_SPIN))
+				(((object->player->charability2 == CA2_SPINDASH) && (object->player->cmd.buttons & BT_BRAKE))
 				|| (spring->flags2 & MF2_AMBUSH)))
 			{
 				pflags = PF_SPINNING;

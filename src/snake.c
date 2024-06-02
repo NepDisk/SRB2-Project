@@ -172,7 +172,7 @@ void Snake_Update(void *opaque)
 	snake_t *snake = opaque;
 
 	// Handle retry
-	if (snake->gameover && (PLAYER1INPUTDOWN(GC_JUMP) || gamekeydown[KEY_ENTER]))
+	if (snake->gameover && (PLAYER1INPUTDOWN(GC_ACCELERATE) || gamekeydown[KEY_ENTER]))
 	{
 		Initialise(snake);
 		snake->pausepressed = true; // Avoid accidental pause on respawn
@@ -244,7 +244,7 @@ void Snake_Update(void *opaque)
 		if (snake->snakelength < 2 || x >= oldx)
 			snake->snakedir[0] = 2;
 	}
-	else if (PLAYER1INPUTDOWN(GC_FORWARD) || gamekeydown[KEY_UPARROW] || joystate == 1)
+	else if (PLAYER1INPUTDOWN(GC_AIMFORWARD) || gamekeydown[KEY_UPARROW] || joystate == 1)
 	{
 		if (snake->snakelength < 2 || y <= oldy)
 			snake->snakedir[0] = 3;

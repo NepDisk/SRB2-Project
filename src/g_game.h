@@ -98,8 +98,8 @@ typedef enum
 
 	JA_DIGITAL, // axes henceforth use digital deadzone
 
-	JA_JUMP = JA_DIGITAL,
-	JA_SPIN,
+	JA_ACCELERATE = JA_DIGITAL,
+	JA_BRAKE,
 	JA_SHIELD,
 	JA_FIRE,
 	JA_FIRENORMAL,

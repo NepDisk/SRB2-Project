@@ -4759,7 +4759,7 @@ static void P_ProcessRopeHang(player_t *player, mtag_t sectag)
 	if (player->mo->momz > 0)
 		return;
 
-	if (player->cmd.buttons & BT_SPIN)
+	if (player->cmd.buttons & BT_BRAKE)
 		return;
 
 	if (!(player->pflags & PF_SLIDING) && P_IsPlayerInState(player, S_PLAY_PAIN))
@@ -7039,7 +7039,7 @@ void P_SpawnSpecials(boolean fromnetsave)
 						busttype = BT_TOUCH;
 						break;
 					case TMFB_SPIN:
-						busttype = BT_SPINBUST;
+						busttype = BT_BRAKEBUST;
 						break;
 					case TMFB_REGULAR:
 						busttype = BT_REGULAR;
@@ -7117,7 +7117,7 @@ void P_SpawnSpecials(boolean fromnetsave)
 									fflr->busttype = BT_TOUCH;
 									break;
 								case TMFB_SPIN:
-									fflr->busttype = BT_SPINBUST;
+									fflr->busttype = BT_BRAKEBUST;
 									break;
 								case TMFB_REGULAR:
 									fflr->busttype = BT_REGULAR;
@@ -7295,7 +7295,7 @@ void P_SpawnSpecials(boolean fromnetsave)
 						busttype = BT_TOUCH;
 						break;
 					case TMFB_SPIN:
-						busttype = BT_SPINBUST;
+						busttype = BT_BRAKEBUST;
 						break;
 					case TMFB_REGULAR:
 						busttype = BT_REGULAR;

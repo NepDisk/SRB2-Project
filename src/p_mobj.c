@@ -1609,7 +1609,7 @@ static void P_PushableCheckBustables(mobj_t *mo)
 						continue;
 
 					break;
-				case BT_SPINBUST:
+				case BT_BRAKEBUST:
 					if (mo->z + mo->momz > topheight)
 						continue;
 

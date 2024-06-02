@@ -69,8 +69,8 @@ static void B_BuildTailsTiccmd(mobj_t *sonic, mobj_t *tails, ticcmd_t *cmd)
 	SINT8 flip = P_MobjFlip(tails);
 	boolean _2d = (tails->flags2 & MF2_TWOD) || twodlevel;
 	fixed_t scale = tails->scale;
-	boolean jump_last = (bot->lastbuttons & BT_JUMP);
-	boolean spin_last = (bot->lastbuttons & BT_SPIN);
+	boolean jump_last = (bot->lastbuttons & BT_ACCELERATE);
+	boolean spin_last = (bot->lastbuttons & BT_BRAKE);
 
 	fixed_t dist = P_AproxDistance(sonic->x - tails->x, sonic->y - tails->y);
 	fixed_t zdist = flip * (sonic->z - tails->z);
@@ -105,8 +105,8 @@ static void B_BuildTailsTiccmd(mobj_t *sonic, mobj_t *tails, ticcmd_t *cmd)
 	if (tails->player->powers[pw_carry] == CR_MACESPIN || tails->player->powers[pw_carry] == CR_GENERIC)
 	{
 		boolean isrelevant = (sonic->player->powers[pw_carry] == CR_MACESPIN || sonic->player->powers[pw_carry] == CR_GENERIC);
-		if (sonic->player->cmd.buttons & BT_JUMP && (sonic->player->pflags & PF_JUMPED) && isrelevant)
-			cmd->buttons |= BT_JUMP;
+		if (sonic->player->cmd.buttons & BT_ACCELERATE && (sonic->player->pflags & PF_JUMPED) && isrelevant)
+			cmd->buttons |= BT_ACCELERATE;
 		if (isrelevant)
 		{
 			cmd->forwardmove = sonic->player->cmd.forwardmove;
@@ -114,7 +114,7 @@ static void B_BuildTailsTiccmd(mobj_t *sonic, mobj_t *tails, ticcmd_t *cmd)
 			if (sonic->angle < tails->angle)
 				cmd->angleturn = -cmd->angleturn;
 		} else if (dist > FixedMul(512*FRACUNIT, tails->scale))
-			cmd->buttons |= BT_JUMP;
+			cmd->buttons |= BT_ACCELERATE;
 		return;
 	}
 
@@ -217,7 +217,7 @@ static void B_BuildTailsTiccmd(mobj_t *sonic, mobj_t *tails, ticcmd_t *cmd)
 		{
 			cmd->forwardmove = pcmd->forwardmove;
 			cmd->sidemove = pcmd->sidemove;
-			if (pcmd->buttons & BT_SPIN)
+			if (pcmd->buttons & BT_BRAKE)
 			{
 				spin = true;
 				jump = false;
@@ -232,7 +232,7 @@ static void B_BuildTailsTiccmd(mobj_t *sonic, mobj_t *tails, ticcmd_t *cmd)
 		}
 	}
 
-	if (P_IsObjectOnGround(tails) && !(pcmd->buttons & BT_JUMP) && (mem->thinkstate == AI_FLYSTANDBY || mem->thinkstate == AI_FLYCARRY))
+	if (P_IsObjectOnGround(tails) && !(pcmd->buttons & BT_ACCELERATE) && (mem->thinkstate == AI_FLYSTANDBY || mem->thinkstate == AI_FLYCARRY))
 		mem->thinkstate = AI_FOLLOW;
 
 	// ********
@@ -382,7 +382,7 @@ void B_BuildTiccmd(player_t *player, ticcmd_t *cmd)
 	if (player->playerstate == PST_DEAD)
 	{
 		if (B_CheckRespawn(player))
-			cmd->buttons |= BT_JUMP;
+			cmd->buttons |= BT_ACCELERATE;
 		return;
 	}
 
@@ -469,9 +469,9 @@ void B_KeysToTiccmd(mobj_t *mo, ticcmd_t *cmd, boolean forward, boolean backward
 		}
 	}
 	if (jump)
-		cmd->buttons |= BT_JUMP;
+		cmd->buttons |= BT_ACCELERATE;
 	if (spin)
-		cmd->buttons |= BT_SPIN;
+		cmd->buttons |= BT_BRAKE;
 }
 
 void B_MoveBlocked(player_t *player)

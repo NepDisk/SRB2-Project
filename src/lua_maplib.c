@@ -2171,7 +2171,7 @@ static INT32 P_GetOldFOFFlags(ffloor_t *fflr)
 		result |= FF_OLD_INTANGIBLEFLATS;
 	if (fflr->busttype == BT_TOUCH)
 		result |= FF_OLD_SHATTER;
-	if (fflr->busttype == BT_SPINBUST)
+	if (fflr->busttype == BT_BRAKEBUST)
 		result |= FF_OLD_SPINBUST;
 	if (fflr->busttype == BT_STRONG)
 		result |= FF_OLD_STRONGBUST;
@@ -2376,7 +2376,7 @@ static void P_SetOldFOFFlags(ffloor_t *fflr, oldffloortype_e oldflags)
 	if (oldflags & FF_OLD_SHATTER)
 		fflr->busttype = BT_TOUCH;
 	else if (oldflags & FF_OLD_SPINBUST)
-		fflr->busttype = BT_SPINBUST;
+		fflr->busttype = BT_BRAKEBUST;
 	else if (oldflags & FF_OLD_STRONGBUST)
 		fflr->busttype = BT_STRONG;
 	else
