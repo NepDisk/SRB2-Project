@@ -50,25 +50,25 @@ INT32 gamecontrolbisdefault[num_gamecontrolschemes][NUM_GAMECONTROLS][2];
 
 // lists of GC codes for selective operation
 const INT32 gcl_tutorial_check[num_gcl_tutorial_check] = {
-	GC_AIMFORWARD, GC_BACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT,
+	GC_AIMFORWARD, GC_AIMBACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT,
 	GC_TURNLEFT, GC_TURNRIGHT
 };
 
 const INT32 gcl_tutorial_used[num_gcl_tutorial_used] = {
-	GC_AIMFORWARD, GC_BACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT,
+	GC_AIMFORWARD, GC_AIMBACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT,
 	GC_TURNLEFT, GC_TURNRIGHT,
 	GC_ACCELERATE, GC_BRAKE
 };
 
 const INT32 gcl_tutorial_full[num_gcl_tutorial_full] = {
-	GC_AIMFORWARD, GC_BACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT,
+	GC_AIMFORWARD, GC_AIMBACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT,
 	GC_LOOKUP, GC_LOOKDOWN, GC_TURNLEFT, GC_TURNRIGHT, GC_CENTERVIEW,
 	GC_ACCELERATE, GC_BRAKE,
 	GC_FIRE, GC_FIRENORMAL
 };
 
 const INT32 gcl_movement[num_gcl_movement] = {
-	GC_AIMFORWARD, GC_BACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT
+	GC_AIMFORWARD, GC_AIMBACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT
 };
 
 const INT32 gcl_camera[num_gcl_camera] = {
@@ -76,7 +76,7 @@ const INT32 gcl_camera[num_gcl_camera] = {
 };
 
 const INT32 gcl_movement_camera[num_gcl_movement_camera] = {
-	GC_AIMFORWARD, GC_BACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT,
+	GC_AIMFORWARD, GC_AIMBACKWARD, GC_STRAFELEFT, GC_STRAFERIGHT,
 	GC_TURNLEFT, GC_TURNRIGHT
 };
 
@@ -681,7 +681,7 @@ void G_DefineDefaultControls(void)
 
 	// FPS game controls (WASD)
 	gamecontroldefault[gcs_fps][GC_AIMFORWARD    ][0] = 'w';
-	gamecontroldefault[gcs_fps][GC_BACKWARD   ][0] = 's';
+	gamecontroldefault[gcs_fps][GC_AIMBACKWARD   ][0] = 's';
 	gamecontroldefault[gcs_fps][GC_STRAFELEFT ][0] = 'a';
 	gamecontroldefault[gcs_fps][GC_STRAFERIGHT][0] = 'd';
 	gamecontroldefault[gcs_fps][GC_LOOKUP     ][0] = KEY_UPARROW;
@@ -702,7 +702,7 @@ void G_DefineDefaultControls(void)
 
 	// Platform game controls (arrow keys), currently unused
 	gamecontroldefault[gcs_platform][GC_AIMFORWARD    ][0] = KEY_UPARROW;
-	gamecontroldefault[gcs_platform][GC_BACKWARD   ][0] = KEY_DOWNARROW;
+	gamecontroldefault[gcs_platform][GC_AIMBACKWARD   ][0] = KEY_DOWNARROW;
 	gamecontroldefault[gcs_platform][GC_STRAFELEFT ][0] = 'a';
 	gamecontroldefault[gcs_platform][GC_STRAFERIGHT][0] = 'd';
 	gamecontroldefault[gcs_platform][GC_LOOKUP     ][0] = KEY_PGUP;
@@ -728,7 +728,7 @@ void G_DefineDefaultControls(void)
 		gamecontroldefault[i][GC_WEPSLOT5     ][0] = '5';
 		gamecontroldefault[i][GC_WEPSLOT6     ][0] = '6';
 		gamecontroldefault[i][GC_WEPSLOT7     ][0] = '7';
-		gamecontroldefault[i][GC_TOSSFLAG     ][0] = '\'';
+		gamecontroldefault[i][GC_DRIFT     ][0] = '\'';
 		gamecontroldefault[i][GC_CAMTOGGLE    ][0] = 'v';
 		gamecontroldefault[i][GC_CAMRESET     ][0] = 'r';
 		gamecontroldefault[i][GC_TALKKEY      ][0] = 't';
@@ -752,7 +752,7 @@ void G_DefineDefaultControls(void)
 		gamecontroldefault[i][GC_SCORES       ][1] = KEY_JOY1+6; // Back
 		gamecontroldefault[i][GC_SYSTEMMENU   ][0] = KEY_JOY1+7; // Start
 		gamecontroldefault[i][GC_VIEWPOINTNEXT][1] = KEY_HAT1+0; // D-Pad Up
-		gamecontroldefault[i][GC_TOSSFLAG     ][1] = KEY_HAT1+1; // D-Pad Down
+		gamecontroldefault[i][GC_DRIFT     ][1] = KEY_HAT1+1; // D-Pad Down
 		gamecontroldefault[i][GC_WEAPONPREV   ][1] = KEY_HAT1+2; // D-Pad Left
 		gamecontroldefault[i][GC_WEAPONNEXT   ][1] = KEY_HAT1+3; // D-Pad Right
 
@@ -768,7 +768,7 @@ void G_DefineDefaultControls(void)
 		//gamecontrolbisdefault[i][GC_SCORES       ][1] = KEY_2JOY1+6; // Back
 		//gamecontrolbisdefault[i][GC_SYSTEMMENU   ][0] = KEY_2JOY1+7; // Start
 		gamecontrolbisdefault[i][GC_VIEWPOINTNEXT][1] = KEY_2HAT1+0; // D-Pad Up
-		gamecontrolbisdefault[i][GC_TOSSFLAG     ][1] = KEY_2HAT1+1; // D-Pad Down
+		gamecontrolbisdefault[i][GC_DRIFT     ][1] = KEY_2HAT1+1; // D-Pad Down
 		gamecontrolbisdefault[i][GC_WEAPONPREV   ][1] = KEY_2HAT1+2; // D-Pad Left
 		gamecontrolbisdefault[i][GC_WEAPONNEXT   ][1] = KEY_2HAT1+3; // D-Pad Right
 	}
@@ -892,7 +892,7 @@ static INT32 G_FilterKeyByVersion(INT32 numctrl, INT32 keyidx, INT32 player, INT
 		return -1; // skip setting control
 
 	if (GETMAJOREXECVERSION(cv_execversion.value) < 27 && ( // v2.1.22
-		numctrl == GC_WEAPONNEXT || numctrl == GC_WEAPONPREV || numctrl == GC_TOSSFLAG ||
+		numctrl == GC_WEAPONNEXT || numctrl == GC_WEAPONPREV || numctrl == GC_DRIFT ||
 		numctrl == GC_BRAKE || numctrl == GC_CAMRESET || numctrl == GC_ACCELERATE ||
 		numctrl == GC_PAUSE || numctrl == GC_SYSTEMMENU || numctrl == GC_CAMTOGGLE ||
 		numctrl == GC_SCREENSHOT || numctrl == GC_TALKKEY || numctrl == GC_SCORES ||

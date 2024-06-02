@@ -1158,7 +1158,7 @@ void OP_ResetObjectplace(void)
 	if (player->pflags & PF_ATTACKDOWN)
 	{
 		// Are ANY objectplace buttons pressed?  If no, remove flag.
-		if (!(cmd->buttons & (BT_ATTACK|BT_TOSSFLAG|BT_BRAKE|BT_WEAPONNEXT|BT_WEAPONPREV)))
+		if (!(cmd->buttons & (BT_ATTACK|BT_DRIFT|BT_BRAKE|BT_WEAPONNEXT|BT_WEAPONPREV)))
 			player->pflags &= ~PF_ATTACKDOWN;
 
 		// Do nothing.
@@ -1191,7 +1191,7 @@ void OP_ResetObjectplace(void)
 	}
 
 	// This places a bumper!
-	if (cmd->buttons & BT_TOSSFLAG)
+	if (cmd->buttons & BT_DRIFT)
 	{
 		UINT16 vertangle = (UINT16)(player->anotherflyangle % 360);
 		UINT16 newflags;
@@ -1375,7 +1375,7 @@ void OP_ObjectplaceMovement(player_t *player)
 	if (player->pflags & PF_ATTACKDOWN)
 	{
 		// Are ANY objectplace buttons pressed?  If no, remove flag.
-		if (!(cmd->buttons & (BT_ATTACK|BT_TOSSFLAG|BT_WEAPONNEXT|BT_WEAPONPREV)))
+		if (!(cmd->buttons & (BT_ATTACK|BT_DRIFT|BT_WEAPONNEXT|BT_WEAPONPREV)))
 			player->pflags &= ~PF_ATTACKDOWN;
 
 		// Do nothing.

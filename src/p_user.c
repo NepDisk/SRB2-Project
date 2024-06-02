@@ -8644,7 +8644,7 @@ void P_MovePlayer(player_t *player)
 		P_DoTeeter(player);
 
 	// Toss a flag
-	if (G_GametypeHasTeams() && (cmd->buttons & BT_TOSSFLAG) && !(player->powers[pw_super]) && !(player->tossdelay))
+	if (G_GametypeHasTeams() && (cmd->buttons & BT_DRIFT) && !(player->powers[pw_super]) && !(player->tossdelay))
 	{
 		if (!(player->gotflag & (GF_REDFLAG|GF_BLUEFLAG)))
 			P_PlayerEmeraldBurst(player, true); // Toss emeralds

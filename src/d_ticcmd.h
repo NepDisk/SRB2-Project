@@ -38,7 +38,7 @@ typedef enum
 	BT_BRAKE       = 1<<7,  // spin action
 	BT_CAMLEFT    = 1<<8,  // turn camera left
 	BT_CAMRIGHT   = 1<<9,  // turn camera right
-	BT_TOSSFLAG   = 1<<10, // toss flag or emeralds
+	BT_DRIFT   = 1<<10, // toss flag or emeralds
 	BT_ACCELERATE       = 1<<11, // jump action
 	BT_FIRENORMAL = 1<<12, // fire a normal ring no matter what
 	

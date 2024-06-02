@@ -102,7 +102,7 @@ typedef enum
 	JA_BRAKE,
 	JA_SHIELD,
 	JA_FIRE,
-	JA_FIRENORMAL,
+	JA_DRIFT,
 } joyaxis_e;
 
 INT32 JoyAxis(joyaxis_e axissel);

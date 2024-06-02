@@ -60,7 +60,7 @@ typedef enum
 {
 	GC_NULL = 0, // a key/button mapped to GC_NULL has no effect
 	GC_AIMFORWARD,
-	GC_BACKWARD,
+	GC_AIMBACKWARD,
 	GC_STRAFELEFT,
 	GC_STRAFERIGHT,
 	GC_TURNLEFT,
@@ -77,7 +77,7 @@ typedef enum
 	GC_SHIELD,
 	GC_FIRE,
 	GC_FIRENORMAL,
-	GC_TOSSFLAG,
+	GC_DRIFT,
 	GC_BRAKE,
 	GC_CAMTOGGLE,
 	GC_CAMRESET,

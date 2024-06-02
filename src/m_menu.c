@@ -1072,7 +1072,7 @@ static menuitem_t OP_ChangeControlsMenu[] =
 	{IT_HEADER, NULL, "Movement", NULL, 0},
 	{IT_SPACE, NULL, NULL, NULL, 0}, // padding
 	{IT_CALL | IT_STRING2, NULL, "Move Forward",     M_ChangeControl, GC_AIMFORWARD     },
-	{IT_CALL | IT_STRING2, NULL, "Move Backward",    M_ChangeControl, GC_BACKWARD    },
+	{IT_CALL | IT_STRING2, NULL, "Move Backward",    M_ChangeControl, GC_AIMBACKWARD    },
 	{IT_CALL | IT_STRING2, NULL, "Move Left",        M_ChangeControl, GC_STRAFELEFT  },
 	{IT_CALL | IT_STRING2, NULL, "Move Right",       M_ChangeControl, GC_STRAFERIGHT },
 	{IT_CALL | IT_STRING2, NULL, "Jump",             M_ChangeControl, GC_ACCELERATE        },
@@ -1107,7 +1107,7 @@ static menuitem_t OP_ChangeControlsMenu[] =
 	{IT_SPACE, NULL, NULL, NULL, 0}, // padding
 	{IT_CALL | IT_STRING2, NULL, "Fire",             M_ChangeControl, GC_FIRE        },
 	{IT_CALL | IT_STRING2, NULL, "Fire Normal",      M_ChangeControl, GC_FIRENORMAL  },
-	{IT_CALL | IT_STRING2, NULL, "Toss Flag",        M_ChangeControl, GC_TOSSFLAG    },
+	{IT_CALL | IT_STRING2, NULL, "Toss Flag",        M_ChangeControl, GC_DRIFT    },
 	{IT_CALL | IT_STRING2, NULL, "Next Weapon",      M_ChangeControl, GC_WEAPONNEXT  },
 	{IT_CALL | IT_STRING2, NULL, "Prev Weapon",      M_ChangeControl, GC_WEAPONPREV  },
 	{IT_CALL | IT_STRING2, NULL, "Normal / Infinity",   M_ChangeControl, GC_WEPSLOT1    },
