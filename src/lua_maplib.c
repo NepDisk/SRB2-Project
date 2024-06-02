@@ -2771,6 +2771,7 @@ enum mapheaderinfo_e
 	mapheaderinfo_maxbonuslives,
 	mapheaderinfo_levelflags,
 	mapheaderinfo_menuflags,
+	mapheaderinfo_mobj_scale,
 	mapheaderinfo_selectheading,
 	mapheaderinfo_startrings,
 	mapheaderinfo_sstimer,
@@ -2820,6 +2821,7 @@ static const char *const mapheaderinfo_opt[] = {
 	"maxbonuslives",
 	"levelflags",
 	"menuflags",
+	"mobjscale",
 	"selectheading",
 	"startrings",
 	"sstimer",
@@ -2963,6 +2965,9 @@ static int mapheaderinfo_get(lua_State *L)
 		break;
 	case mapheaderinfo_menuflags:
 		lua_pushinteger(L, header->menuflags);
+		break;
+	case mapheaderinfo_mobj_scale:
+		lua_pushinteger(L, header->mobj_scale);
 		break;
 	case mapheaderinfo_selectheading:
 		lua_pushstring(L, header->selectheading);

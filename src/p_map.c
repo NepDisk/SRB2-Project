@@ -156,6 +156,8 @@ boolean P_MoveOrigin(mobj_t *thing, fixed_t x, fixed_t y, fixed_t z)
 
 boolean P_DoSpring(mobj_t *spring, mobj_t *object)
 {
+	const fixed_t hscale = mapobjectscale + (mapobjectscale - object->scale);
+	const fixed_t vscale = mapobjectscale + (object->scale - mapobjectscale);
 	fixed_t vertispeed = spring->info->mass;
 	fixed_t horizspeed = spring->info->damage;
 	boolean final = false;
@@ -377,10 +379,23 @@ boolean P_DoSpring(mobj_t *spring, mobj_t *object)
 	}
 
 	if (vertispeed)
-		object->momz = FixedMul(vertispeed,FixedSqrt(FixedMul(object->scale, spring->scale)));
+		object->momz = FixedMul(vertispeed,FixedSqrt(FixedMul(vscale, spring->scale)));
 
 	if (horizspeed)
-		P_InstaThrustEvenIn2D(object, spring->angle, FixedMul(horizspeed,FixedSqrt(FixedMul(object->scale, spring->scale))));
+	{
+		if (!object->player)
+			P_InstaThrustEvenIn2D(object, spring->angle, FixedMul(horizspeed,FixedSqrt(FixedMul(hscale, spring->scale))));
+		else
+		{
+			fixed_t finalSpeed = FixedDiv(horizspeed, hscale);
+			fixed_t pSpeed = object->player->speed;
+
+			if (pSpeed > finalSpeed)
+				finalSpeed = pSpeed;
+
+			P_InstaThrustEvenIn2D(object, spring->angle, FixedMul(finalSpeed,FixedSqrt(FixedMul(hscale, spring->scale))));
+		}
+	}
 
 	// Re-solidify
 	spring->flags |= (spring->info->flags & (MF_SPRING|MF_SPECIAL));

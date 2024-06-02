@@ -234,6 +234,7 @@ mobj_t *hunt3;
 UINT32 countdown, countdown2; // for racing
 
 fixed_t gravity;
+fixed_t mapobjectscale;
 
 INT16 autobalance; //for CTF team balance
 INT16 teamscramble; //for CTF team scramble
@@ -3650,8 +3651,6 @@ tolinfo_t TYPEOFLEVEL[NUMTOLNAMES] = {
 	{"2D",TOL_2D},
 	{"MARIO",TOL_MARIO},
 	{"NIGHTS",TOL_NIGHTS},
-	{"OLDBRAK",TOL_ERZ3},
-	{"ERZ3",TOL_ERZ3},
 
 	{"XMAS",TOL_XMAS},
 	{"CHRISTMAS",TOL_XMAS},

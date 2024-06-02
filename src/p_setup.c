@@ -14,6 +14,7 @@
 #include "doomdef.h"
 #include "d_main.h"
 #include "byteptr.h"
+#include "doomstat.h"
 #include "g_game.h"
 
 #include "p_local.h"
@@ -396,6 +397,7 @@ static void P_ClearSingleMapHeaderInfo(INT16 i)
 	mapheaderinfo[num]->maxbonuslives = -1;
 	mapheaderinfo[num]->levelflags = 0;
 	mapheaderinfo[num]->menuflags = 0;
+	mapheaderinfo[num]->mobj_scale = FRACUNIT;
 #if 1 // equivalent to "FlickyList = DEMO"
 	P_SetDemoFlickies(num);
 #else // equivalent to "FlickyList = NONE"
@@ -1536,7 +1538,7 @@ static void P_LoadThings(UINT8 *data)
 		mt->options = READUINT16(data);
 		mt->extrainfo = (UINT8)(mt->type >> 12);
 		Tag_FSet(&mt->tags, 0);
-		mt->scale = FRACUNIT;
+		mt->scale = mapobjectscale;
 		mt->spritexscale = mt->spriteyscale = FRACUNIT;
 		memset(mt->args, 0, NUMMAPTHINGARGS*sizeof(*mt->args));
 		memset(mt->stringargs, 0x00, NUMMAPTHINGSTRINGARGS*sizeof(*mt->stringargs));
@@ -3165,7 +3167,7 @@ static void P_LoadTextmap(void)
 		mt->z = 0;
 		mt->extrainfo = 0;
 		Tag_FSet(&mt->tags, 0);
-		mt->scale = FRACUNIT;
+		mt->scale = mapobjectscale;
 		mt->spritexscale = mt->spriteyscale = FRACUNIT;
 		memset(mt->args, 0, NUMMAPTHINGARGS*sizeof(*mt->args));
 		memset(mt->stringargs, 0x00, NUMMAPTHINGSTRINGARGS*sizeof(*mt->stringargs));

@@ -1757,6 +1757,8 @@ void readlevelheader(MYFILE *f, INT32 num)
 				mapheaderinfo[num-1]->levelflags = (UINT16)i;
 			else if (fastcmp(word, "MENUFLAGS"))
 				mapheaderinfo[num-1]->menuflags = (UINT8)i;
+			else if (fastcmp(word, "MOBJSCALE"))
+				mapheaderinfo[num-1]->mobj_scale = get_number(word2);
 
 			// Individual triggers for level flags, for ease of use (and 2.0 compatibility)
 			else if (fastcmp(word, "SCRIPTISFILE"))

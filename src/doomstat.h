@@ -350,6 +350,9 @@ typedef struct
 	// NiGHTS stuff.
 	UINT8 numGradedMares;       ///< Internal. For grade support.
 	nightsgrades_t *grades;     ///< NiGHTS grades. Allocated dynamically for space reasons. Be careful.
+	
+	//SRB2Kart
+	fixed_t mobj_scale; // replacement for TOL_ERZ3
 
 	// Music stuff.
 	UINT32 musinterfadeout;     ///< Fade out level music on intermission screen in milliseconds
@@ -480,7 +483,7 @@ enum TypeOfLevel
 	TOL_2D     = 0x0100, ///< 2D
 	TOL_MARIO  = 0x0200, ///< Mario
 	TOL_NIGHTS = 0x0400, ///< NiGHTS
-	TOL_ERZ3   = 0x0800, ///< ERZ3
+	//   = 0x0800, ///< ERZ3
 	TOL_XMAS   = 0x1000, ///< Christmas NiGHTS
 };
 
@@ -559,6 +562,7 @@ extern UINT32 countdown;
 extern UINT32 countdown2;
 
 extern fixed_t gravity;
+extern fixed_t mapobjectscale;
 
 //for CTF balancing
 extern INT16 autobalance;

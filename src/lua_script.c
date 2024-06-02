@@ -410,6 +410,9 @@ int LUA_PushGlobals(lua_State *L, const char *word)
 	} else if (fastcmp(word,"VERSIONSTRING")) {
 		lua_pushstring(L, VERSIONSTRING);
 		return 1;
+	} else if (fastcmp(word,"mapobjectscale")) {
+		lua_pushinteger(L, mapobjectscale);
+		return 1;
 	} else if (fastcmp(word, "token")) {
 		lua_pushinteger(L, token);
 		return 1;

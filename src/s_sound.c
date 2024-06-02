@@ -1085,7 +1085,7 @@ fixed_t S_CalculateSoundDistance(fixed_t sx1, fixed_t sy1, fixed_t sz1, fixed_t 
 
 	approx_dist <<= FRACBITS;
 
-	return approx_dist;
+	return FixedDiv(approx_dist,mapobjectscale); // approx_dist
 }
 
 //

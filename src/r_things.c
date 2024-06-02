@@ -13,6 +13,7 @@
 
 #include "doomdef.h"
 #include "console.h"
+#include "doomstat.h"
 #include "g_game.h"
 #include "r_local.h"
 #include "st_stuff.h"
@@ -2708,8 +2709,8 @@ void R_AddSprites(sector_t *sec, INT32 lightlevel)
 
 	// Handle all things in sector.
 	// If a limit exists, handle things a tiny bit different.
-	limit_dist = (fixed_t)(cv_drawdist.value) << FRACBITS;
-	hoop_limit_dist = (fixed_t)(cv_drawdist_nights.value) << FRACBITS;
+	limit_dist = (fixed_t)(cv_drawdist.value) * mapobjectscale;
+	hoop_limit_dist = (fixed_t)(cv_drawdist_nights.value) * mapobjectscale;
 	for (thing = sec->thinglist; thing; thing = thing->snext)
 	{
 		if (R_ThingWithinDist(thing, limit_dist, hoop_limit_dist))

@@ -15,6 +15,7 @@
 ///        Pending weapon.
 
 #include "doomdef.h"
+#include "doomstat.h"
 #include "i_system.h"
 #include "d_event.h"
 #include "netcode/d_net.h"
@@ -9154,6 +9155,8 @@ void P_NukeEnemies(mobj_t *inflictor, mobj_t *source, fixed_t radius)
 	angle_t fa;
 	thinker_t *think;
 	INT32 i;
+	
+	radius = FixedMul(radius, mapobjectscale);
 
 	for (i = 0; i < 16; i++)
 	{
@@ -9941,8 +9944,8 @@ void P_ResetCamera(player_t *player, camera_t *thiscam)
 
 	thiscam->subsector = R_PointInSubsector(thiscam->x,thiscam->y);
 
-	thiscam->radius = 20*FRACUNIT;
-	thiscam->height = 16*FRACUNIT;
+	thiscam->radius = 20*mapobjectscale;
+	thiscam->height = 16*mapobjectscale;
 
 	while (!P_MoveChaseCamera(player,thiscam,true) && ++tries < 2*TICRATE);
 }

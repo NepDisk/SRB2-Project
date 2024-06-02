@@ -1922,7 +1922,7 @@ static void SaveMobjThinker(const thinker_t *th, const UINT8 type)
 		diff |= MD_SCALE;
 	if (mobj->destscale != mobj->scale)
 		diff |= MD_DSCALE;
-	if (mobj->scalespeed != FRACUNIT/12)
+	if (mobj->scalespeed != mapobjectscale/12)
 		diff2 |= MD2_SCALESPEED;
 
 	if (mobj == redflag)
@@ -4554,6 +4554,7 @@ static void P_NetArchiveMisc(boolean resending)
 	WRITEUINT32(save_p, countdown2);
 
 	WRITEFIXED(save_p, gravity);
+	WRITEFIXED(save_p, mapobjectscale);
 
 	WRITEUINT32(save_p, countdowntimer);
 	WRITEUINT8(save_p, countdowntimeup);
@@ -4658,6 +4659,7 @@ static inline boolean P_NetUnArchiveMisc(boolean reloading)
 	countdown2 = READUINT32(save_p);
 
 	gravity = READFIXED(save_p);
+	mapobjectscale = READFIXED(save_p);
 
 	countdowntimer = (tic_t)READUINT32(save_p);
 	countdowntimeup = (boolean)READUINT8(save_p);

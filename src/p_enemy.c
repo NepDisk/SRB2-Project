@@ -11191,6 +11191,8 @@ void A_SetScale(mobj_t *actor)
 		return;
 	}
 
+	locvar1 = FixedMul(locvar1, mapobjectscale); // SRB2Kart
+	
 	if ((locvar2 & 65535) == 0)
 		P_SetScale(target, locvar1, true); // this instantly changes current scale to var1 if used, if not destscale will alter scale to var1 over time
 	else
