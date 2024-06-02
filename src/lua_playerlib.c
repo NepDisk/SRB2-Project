@@ -1441,6 +1441,7 @@ enum ticcmd_e
 	ticcmd_angleturn,
 	ticcmd_aiming,
 	ticcmd_buttons,
+	ticcmd_driftturn,
 	ticcmd_latency,
 };
 
@@ -1450,6 +1451,7 @@ static const char *const ticcmd_opt[] = {
 	"angleturn",
 	"aiming",
 	"buttons",
+	"driftturn",
 	"latency",
 	NULL,
 };
@@ -1482,6 +1484,9 @@ static int ticcmd_get(lua_State *L)
 		break;
 	case ticcmd_buttons:
 		lua_pushinteger(L, cmd->buttons);
+		break;
+	case ticcmd_driftturn:
+		lua_pushinteger(L, cmd->driftturn);
 		break;
 	case ticcmd_latency:
 		lua_pushinteger(L, cmd->latency);

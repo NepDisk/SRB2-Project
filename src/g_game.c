@@ -53,6 +53,9 @@
 #include "lua_hud.h"
 #include "lua_libs.h"
 
+// Shart
+#include "kart/k_kart.h"
+
 gameaction_t gameaction;
 gamestate_t gamestate = GS_NULL;
 UINT8 ultimatemode = false;
@@ -212,6 +215,21 @@ UINT16 underwatertics = 30*TICRATE;
 UINT16 spacetimetics = 11*TICRATE + (TICRATE/2);
 UINT16 extralifetics = 4*TICRATE;
 UINT16 nightslinktics = 2*TICRATE;
+
+// SRB2kart
+tic_t introtime = 108+5; // plus 5 for white fade
+tic_t starttime = 6*TICRATE + (3*TICRATE/4);
+tic_t raceexittime = 5*TICRATE + (2*TICRATE/3);
+tic_t battleexittime = 8*TICRATE;
+INT32 hyudorotime = 7*TICRATE;
+INT32 stealtime = TICRATE/2;
+INT32 sneakertime = TICRATE + (TICRATE/3);
+INT32 itemtime = 8*TICRATE;
+INT32 comebacktime = 10*TICRATE;
+INT32 bumptime = 6;
+INT32 wipeoutslowtime = 20;
+INT32 wantedreduce = 5*TICRATE;
+INT32 wantedfrequency = 10*TICRATE;
 
 INT32 gameovertics = 11*TICRATE;
 
@@ -1215,7 +1233,7 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer)
 	if (axis != 0)
 	{
 		cmd->angleturn = (INT16)(cmd->angleturn - (((axis * angleturn[1]) >> 10))); // ANALOG!
-		//cmd->driftturn = (INT16)(cmd->angleturn - (((axis * angleturn[1]) >> 10))); // ANALOG!
+		cmd->driftturn = (INT16)(cmd->angleturn - (((axis * angleturn[1]) >> 10))); // ANALOG!
 	}
 
 	// forward with key or button // SRB2kart - we use an accel/brake instead of forward/backward.
@@ -1265,108 +1283,6 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer)
 		cmd->buttons |= BT_CUSTOM2;
 	if (PLAYERINPUTDOWN(ssplayer, GC_CUSTOM3))
 		cmd->buttons |= BT_CUSTOM3;
-
-	// Centerview can be a toggle in simple mode!
-	{
-		static boolean last_centerviewdown[2], centerviewhold[2]; // detect taps for toggle behavior
-		boolean down = PLAYERINPUTDOWN(ssplayer, GC_CENTERVIEW);
-
-		if (!(controlstyle == CS_SIMPLE && cv_cam_centertoggle[forplayer].value))
-			centerviewdown = down;
-		else
-		{
-			if (down && !last_centerviewdown[forplayer])
-				centerviewhold[forplayer] = !centerviewhold[forplayer];
-			last_centerviewdown[forplayer] = down;
-
-			if (cv_cam_centertoggle[forplayer].value == 2 && !down && !ticcmd_ztargetfocus[forplayer])
-				centerviewhold[forplayer] = false;
-
-			centerviewdown = centerviewhold[forplayer];
-		}
-	}
-
-	if (centerviewdown)
-	{
-		if (controlstyle == CS_SIMPLE && !ticcmd_centerviewdown[forplayer] && !G_RingSlingerGametype())
-		{
-			CV_SetValue(&cv_directionchar[forplayer], 2);
-			cmd->angleturn = (INT16)((player->mo->angle - *myangle) >> 16);
-			*myaiming = 0;
-
-			if (cv_cam_lockonboss[forplayer].value)
-				P_SetTarget(&ticcmd_ztargetfocus[forplayer], P_LookForFocusTarget(player, NULL, 0, cv_cam_lockonboss[forplayer].value));
-		}
-
-		ticcmd_centerviewdown[forplayer] = true;
-	}
-	else if (ticcmd_centerviewdown[forplayer])
-	{
-		if (controlstyle == CS_SIMPLE)
-		{
-			P_SetTarget(&ticcmd_ztargetfocus[forplayer], NULL);
-			CV_SetValue(&cv_directionchar[forplayer], 1);
-		}
-
-		ticcmd_centerviewdown[forplayer] = false;
-	}
-
-	if (ticcmd_ztargetfocus[forplayer])
-	{
-		if (
-			P_MobjWasRemoved(ticcmd_ztargetfocus[forplayer]) ||
-			!ticcmd_ztargetfocus[forplayer]->health ||
-			(ticcmd_ztargetfocus[forplayer]->type == MT_EGGMOBILE3 && !ticcmd_ztargetfocus[forplayer]->movecount) // Sea Egg is moving around underground and shouldn't be tracked
-		)
-			P_SetTarget(&ticcmd_ztargetfocus[forplayer], NULL);
-		else
-		{
-			mobj_t *newtarget = NULL;
-			if (zchange[forplayer])
-			{
-				if (!turnleft && !turnright && abs(cmd->angleturn) < angleturn[0])
-					zchange[forplayer] = false;
-			}
-			else if (turnleft || cmd->angleturn > angleturn[0])
-			{
-				zchange[forplayer] = true;
-				newtarget = P_LookForFocusTarget(player, ticcmd_ztargetfocus[forplayer], 1, cv_cam_lockonboss[forplayer].value);
-			}
-			else if (turnright || cmd->angleturn < -angleturn[0])
-			{
-				zchange[forplayer] = true;
-				newtarget = P_LookForFocusTarget(player, ticcmd_ztargetfocus[forplayer], -1, cv_cam_lockonboss[forplayer].value);
-			}
-
-			if (newtarget)
-				P_SetTarget(&ticcmd_ztargetfocus[forplayer], newtarget);
-
-			// I assume this is netgame-safe because gunslinger spawns this for only the local player...... *sweats intensely*
-			newtarget = P_SpawnMobj(ticcmd_ztargetfocus[forplayer]->x, ticcmd_ztargetfocus[forplayer]->y, ticcmd_ztargetfocus[forplayer]->z, MT_LOCKON); // positioning, flip handled in P_SceneryThinker
-			P_SetTarget(&newtarget->target, ticcmd_ztargetfocus[forplayer]);
-			newtarget->drawonlyforplayer = player; // Hide it from the other player in splitscreen, and yourself when spectating
-
-			if (player->mo && P_AproxDistance(
-				player->mo->x - ticcmd_ztargetfocus[forplayer]->x,
-				player->mo->y - ticcmd_ztargetfocus[forplayer]->y
-			) > 50*player->mo->scale)
-			{
-				INT32 anglediff = R_PointToAngle2(player->mo->x, player->mo->y, ticcmd_ztargetfocus[forplayer]->x, ticcmd_ztargetfocus[forplayer]->y) - *myangle;
-				const INT32 maxturn = ANG10/2;
-				anglediff /= 4;
-
-				if (anglediff > maxturn)
-					anglediff = maxturn;
-				else if (anglediff < -maxturn)
-					anglediff = -maxturn;
-
-				cmd->angleturn = (INT16)(cmd->angleturn + (anglediff >> 16));
-			}
-		}
-	}
-
-	if (ticcmd_centerviewdown[forplayer] && controlstyle == CS_SIMPLE)
-		controlstyle = CS_LEGACY;
 
 	if (PLAYERINPUTDOWN(ssplayer, GC_CAMRESET))
 	{
@@ -1434,6 +1350,24 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer)
 		side = MAXPLMOVE;
 	else if (side < -MAXPLMOVE)
 		side = -MAXPLMOVE;
+	
+	//{ SRB2kart - Drift support
+	// Not grouped with the rest of turn stuff because it needs to know what buttons you're pressing for rubber-burn turn
+	// limit turning to angleturn[1] to stop mouselook letting you look too fast
+	if (cmd->angleturn > (angleturn[1]))
+		cmd->angleturn = (angleturn[1]);
+	else if (cmd->angleturn < (-angleturn[1]))
+		cmd->angleturn = (-angleturn[1]);
+
+	if (cmd->driftturn > (angleturn[1]))
+		cmd->driftturn = (angleturn[1]);
+	else if (cmd->driftturn < (-angleturn[1]))
+		cmd->driftturn = (-angleturn[1]);
+
+	if (player->mo)
+		cmd->angleturn = K_GetKartTurnValue(player, cmd->angleturn);
+
+	cmd->angleturn *= realtics;
 
 	cmd->forwardmove = (SINT8)(cmd->forwardmove + forward);
 	cmd->sidemove = (SINT8)(cmd->sidemove + side);
@@ -1451,102 +1385,6 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer)
 		cmd->angleturn = (INT16)((localangle - *myangle) >> 16);
 
 	*myangle += (cmd->angleturn<<16);
-
-	if (controlstyle == CS_LMAOGALOG) {
-		angle_t angle;
-
-		if (player->awayviewtics)
-			angle = player->awayviewmobj->angle;
-		else
-			angle = thiscam->angle;
-
-		cmd->angleturn = (INT16)((angle - (ticcmd_oldangleturn[forplayer] << 16)) >> 16);
-	}
-	else
-	{
-		// Adjust camera angle by player input
-		if (controlstyle == CS_SIMPLE && !forcestrafe && thiscam->chase && !turnheld[forplayer] && !ticcmd_centerviewdown[forplayer] && !player->climbing && player->powers[pw_carry] != CR_MINECART)
-		{
-			fixed_t camadjustfactor = cv_cam_turnfacinginput[forplayer].value;
-
-			if (camadjustfactor)
-			{
-				fixed_t sine = FINESINE((R_PointToAngle2(0, 0, player->rmomx, player->rmomy) - localangle)>>ANGLETOFINESHIFT);
-				fixed_t factor;
-				INT16 camadjust;
-
-				if ((sine > 0) == (cmd->sidemove > 0))
-					sine = 0; // Prevent jerking right when braking from going left, or vice versa
-
-				factor = min(40, FixedMul(player->speed, abs(sine))*2 / FRACUNIT);
-
-				camadjust = (cmd->sidemove * factor * camadjustfactor) >> 16;
-
-				*myangle -= camadjust << 16;
-				cmd->angleturn = (INT16)(cmd->angleturn - camadjust);
-			}
-
-			if (ticcmd_centerviewdown[forplayer] && (cv_cam_lockedinput[forplayer].value || (player->pflags & PF_STARTDASH)))
-				cmd->sidemove = 0;
-		}
-
-		// Adjust camera angle to face player direction, depending on circumstances
-		// Nothing happens if cam left/right are held, so you can hold both to lock the camera in one direction
-		if (controlstyle == CS_SIMPLE && !forcestrafe && thiscam->chase && !turnheld[forplayer] && !ticcmd_centerviewdown[forplayer] && player->powers[pw_carry] != CR_MINECART)
-		{
-			fixed_t camadjustfactor;
-			boolean alt = false; // Reduce intensity on diagonals and prevent backwards movement from turning the camera
-
-			if (player->pflags & PF_GLIDING)
-				camadjustfactor = cv_cam_turnfacingability[forplayer].value/4;
-			else if (player->pflags & PF_STARTDASH)
-				camadjustfactor = cv_cam_turnfacingspindash[forplayer].value/4;
-			else
-			{
-				alt = true;
-				camadjustfactor = cv_cam_turnfacing[forplayer].value/8;
-			}
-
-			camadjustfactor = FixedMul(camadjustfactor, max(FRACUNIT - player->speed, min(player->speed/18, FRACUNIT)));
-
-			camadjustfactor = FixedMul(camadjustfactor, tta_factor[forplayer]);
-
-			if (tta_factor[forplayer] < FRACUNIT && (cmd->forwardmove || cmd->sidemove || tta_factor[forplayer] >= FRACUNIT/3))
-				tta_factor[forplayer] += FRACUNIT>>5;
-			else if (tta_factor[forplayer] && tta_factor[forplayer] < FRACUNIT/3)
-				tta_factor[forplayer] -= FRACUNIT>>5;
-
-			if (camadjustfactor)
-			{
-				angle_t controlangle;
-				INT32 anglediff;
-				INT16 camadjust;
-
-				if ((cmd->forwardmove || cmd->sidemove) && !(player->pflags & PF_SPINNING))
-					controlangle = *myangle + R_PointToAngle2(0, 0, cmd->forwardmove << FRACBITS, -cmd->sidemove << FRACBITS);
-				else
-					controlangle = player->drawangle + drawangleoffset;
-
-				anglediff = controlangle - *myangle;
-
-				if (alt)
-				{
-					fixed_t sine = FINESINE((angle_t) (anglediff)>>ANGLETOFINESHIFT);
-					sine = abs(sine);
-
-					if (abs(anglediff) > ANGLE_90)
-						sine = max(0, sine*3 - 2*FRACUNIT); // At about 135 degrees, this will stop turning
-
-					anglediff = FixedMul(anglediff, sine);
-				}
-
-				camadjust = FixedMul(anglediff, camadjustfactor) >> 16;
-
-				*myangle += camadjust << 16;
-				cmd->angleturn = (INT16)(cmd->angleturn + camadjust);
-			}
-		}
-	}
 
 	// At this point, cmd doesn't contain the final angle yet,
 	// So we need to temporarily transform it so Lua scripters

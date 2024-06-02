@@ -16,6 +16,9 @@ fixed_t K_GetKartSpeed(player_t *player, boolean doboostpower);
 fixed_t K_GetKartAccel(player_t *player);
 
 fixed_t K_3dKartMovement(player_t *player, boolean onground, fixed_t forwardmove);
+void K_MomentumToFacing(player_t *player);
+
+INT16 K_GetKartTurnValue(player_t *player, INT16 turnvalue);
 
 void K_KartPlayerThink(player_t *player, ticcmd_t *cmd);
 

@@ -221,6 +221,81 @@ fixed_t K_3dKartMovement(player_t *player, boolean onground, fixed_t forwardmove
 	return finalspeed;
 }
 
+void K_MomentumToFacing(player_t *player)
+{
+	angle_t dangle = player->mo->angle - R_PointToAngle2(0, 0, player->mo->momx, player->mo->momy);
+
+	if (dangle > ANGLE_180)
+		dangle = InvAngle(dangle);
+
+	// If you aren't on the ground or are moving in too different of a direction don't do this
+	if (player->mo->eflags & MFE_JUSTHITFLOOR)
+		; // Just hit floor ALWAYS redirects
+	else if (!P_IsObjectOnGround(player->mo) || dangle > ANGLE_90)
+		return;
+
+	P_Thrust(player->mo, player->mo->angle, player->speed - FixedMul(player->speed, player->mo->friction));
+	player->mo->momx = FixedMul(player->mo->momx - player->cmomx, player->mo->friction) + player->cmomx;
+	player->mo->momy = FixedMul(player->mo->momy - player->cmomy, player->mo->friction) + player->cmomy;
+}
+
+// countersteer is how strong the controls are telling us we are turning
+// turndir is the direction the controls are telling us to turn, -1 if turning right and 1 if turning left
+static INT16 K_GetKartDriftValue(player_t *player, fixed_t countersteer)
+{
+	INT16 basedrift, driftangle;
+	fixed_t driftweight = player->kartweight*14; // 12
+
+	// If they aren't drifting or on the ground this doesn't apply
+	if (player->kartstuff[k_drift] == 0 || !P_IsObjectOnGround(player->mo))
+		return 0;
+
+	if (player->kartstuff[k_driftend] != 0)
+	{
+		return -266*player->kartstuff[k_drift]; // Drift has ended and we are tweaking their angle back a bit
+	}
+
+	//basedrift = 90*player->kartstuff[k_drift]; // 450
+	//basedrift = 93*player->kartstuff[k_drift] - driftweight*3*player->kartstuff[k_drift]/10; // 447 - 303
+	basedrift = 83*player->kartstuff[k_drift] - (driftweight - 14)*player->kartstuff[k_drift]/5; // 415 - 303
+	driftangle = abs((252 - driftweight)*player->kartstuff[k_drift]/5);
+
+	return basedrift + FixedMul(driftangle, countersteer);
+}
+
+INT16 K_GetKartTurnValue(player_t *player, INT16 turnvalue)
+{
+	fixed_t p_topspeed = K_GetKartSpeed(player, false);
+	fixed_t p_curspeed = min(player->speed, p_topspeed * 2);
+	fixed_t p_maxspeed = p_topspeed * 3;
+	fixed_t adjustangle = FixedDiv((p_maxspeed>>16) - (p_curspeed>>16), (p_maxspeed>>16) + player->kartweight);
+
+	if (player->spectator)
+		return turnvalue;
+
+	if (player->kartstuff[k_drift] != 0 && P_IsObjectOnGround(player->mo))
+	{
+		// If we're drifting we have a completely different turning value
+		if (player->kartstuff[k_driftend] == 0)
+		{
+			// 800 is the max set in g_game.c with angleturn
+			fixed_t countersteer = FixedDiv(turnvalue*FRACUNIT, 800*FRACUNIT);
+			turnvalue = K_GetKartDriftValue(player, countersteer);
+		}
+		else
+			turnvalue = (INT16)(turnvalue + K_GetKartDriftValue(player, FRACUNIT));
+
+		return turnvalue;
+	}
+
+	turnvalue = FixedMul(turnvalue, adjustangle); // Weight has a small effect on turning
+
+	if (player->kartstuff[k_invincibilitytimer] || player->kartstuff[k_sneakertimer] || player->kartstuff[k_growshrinktimer] > 0)
+		turnvalue = FixedMul(turnvalue, FixedDiv(5*FRACUNIT, 4*FRACUNIT));
+
+	return turnvalue;
+}
+
 void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 {
     

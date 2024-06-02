@@ -543,6 +543,21 @@ extern UINT16 spacetimetics;
 extern UINT16 extralifetics;
 extern UINT16 nightslinktics;
 
+// SRB2kart
+extern tic_t introtime;
+extern tic_t starttime;
+extern tic_t raceexittime;
+extern tic_t battleexittime;
+extern INT32 hyudorotime;
+extern INT32 stealtime;
+extern INT32 sneakertime;
+extern INT32 itemtime;
+extern INT32 comebacktime;
+extern INT32 bumptime;
+extern INT32 wipeoutslowtime;
+extern INT32 wantedreduce;
+extern INT32 wantedfrequency;
+
 extern UINT8 introtoplay;
 extern UINT8 creditscutscene;
 extern UINT8 useBlackRock;

@@ -583,6 +583,9 @@ typedef struct player_s
 	
 	// SRB2kart stuff
 	INT32 kartstuff[NUMKARTSTUFF];
+	
+	INT16 lturn_max[MAXPREDICTTICS];
+	INT16 rturn_max[MAXPREDICTTICS];
 
 	// Bit flags.
 	// See pflags_t, above.
